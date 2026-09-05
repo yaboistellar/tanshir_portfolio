@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <script>
+   (function () {
+  var proto = XMLHttpRequest.prototype;
+  var open = proto.open, setRequestHeader = proto.setRequestHeader, send = proto.send;
+  var TOKEN_KEY = 'base44_access_token';
+  var storedTokenHeader = function () {
+    try { return 'Bearer ' + localStorage.getItem(TOKEN_KEY); } catch (e) { return null; }
+  };
+  var forgetStoredToken = function () {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('token'); } catch (e) {}
+  };
+
+  proto.open = function (method, url) {
+    this.__b44IsAuthCheck = /\/entities\/User\/me(\?|$)/.test(url);
+    return open.apply(this, arguments);
+  };
+
+  proto.setRequestHeader = function (name, value) {
+    if (this.__b44IsAuthCheck && name.toLowerCase() === 'authorization' && value === storedTokenHeader()) {
+      this.__b44SentToken = value;
+    }
+    return setRequestHeader.call(this, name, value);
+  };
+
+  proto.send = function () {
+    this.addEventListener('loadend', function () {
+      var rejectedTokenStillStored = this.status === 401 && this.__b44SentToken === storedTokenHeader();
+      if (rejectedTokenStillStored) forgetStoredToken();
+    });
+    return send.apply(this, arguments);
+  };
+})();
+  </script>
+  <meta charset="utf-8">
+  <link href="https://media.base44.com/images/public/6a9a94146d5606126a6e3f53/401aa2f2d_logo.png" rel="icon" type="image/svg+xml">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <link href="/manifest.json" rel="manifest">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <title>
+   Tanshir Al Musnad — Notebook Edition
+  </title>
+  <meta content="Portfolio of Tanshir Al Musnad — UX research, frontend craft, and notebook-drawn digital experiments." name="description">
+  <script crossorigin="" src="/assets/index-BD1_I2W3.js" type="module">
+  </script>
+  <link crossorigin="" href="/assets/index-B8JpdWdl.css" rel="stylesheet">
+  <script type="module">
+   if (window.self === window.top) {
+  let lastPath = "";
+  function getPageNameFromPath(path) {
+    const segments = path.split("/").filter(Boolean);
+    return segments[0] || null;
+  }
+  function trackPageView() {
+    const path = window.location.pathname;
+    if (path === lastPath) return;
+    lastPath = path;
+    const pageName = getPageNameFromPath(path) || "home";
+    const appId = "6a9a94146d5606126a6e3f53";
+    if (!appId) return;
+    fetch(`/api/app-logs/${appId}/log-user-in-app/${pageName}`, {
+      method: "POST",
+    }).catch(() => {});
+  }
+  const originalPushState = history.pushState.bind(history);
+  history.pushState = function (...args) {
+    originalPushState(...args);
+    trackPageView();
+  };
+  const originalReplaceState = history.replaceState.bind(history);
+  history.replaceState = function (...args) {
+    originalReplaceState(...args);
+    trackPageView();
+  };
+  window.addEventListener("popstate", trackPageView);
+  trackPageView();
+}
+  </script>
+  <meta content="yes" name="mobile-web-app-capable">
+  <meta content="black" name="apple-mobile-web-app-status-bar-style">
+  <meta content="Architectural Archive" name="apple-mobile-web-app-title">
+  <script async="true" data-app-id="6a9a94146d5606126a6e3f53" data-platform-url="https://app.base44.com" src="/static/js/badge.js">
+  </script>
+ <style>
+      @keyframes badge-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .badge-spinner {
+        animation: badge-spin 1s linear infinite;
+      }
+      @keyframes base44-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes base44-scale-in {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style></head>
+ <body>
+  <div id="root"><div class="min-h-screen notebook-paper-margin text-[var(--note-ink)]"><div class="bg-[#FFF380] border-b-2 border-[var(--note-ink)]"><div class="max-w-6xl mx-auto px-4 py-1.5 flex items-center justify-center gap-2 typewriter text-[11px] uppercase tracking-wide"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span></span>Currently available for Q2 design sprints &amp; creative projects</div></div><header class="sticky top-0 z-40 bg-[var(--note-cream)]/90 backdrop-blur-sm border-b-2 border-[var(--note-ink)]"><div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4"><a class="flex items-center gap-1.5 handwritten text-2xl font-bold leading-none" href="/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-5 h-5 fill-[var(--note-ink)]"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>Tanshir Al Musnad</a><nav class="hidden md:flex items-center gap-1 typewriter text-xs uppercase"><a class="px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--note-ink)]/10" href="/">Home</a><a class="px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--note-ink)]/10" href="/#projects">Demo Projects</a><a class="px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--note-ink)]/10" href="/games">Notebook Games</a><a class="px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--note-ink)]/10" href="/bookshelf">Bookshelf</a><a class="px-2.5 py-1.5 rounded transition-colors bg-[var(--note-ink)] text-[var(--note-cream)]" href="/education">Education</a><a class="px-2.5 py-1.5 rounded transition-colors hover:bg-[var(--note-ink)]/10" href="/#contact">Contact</a></nav><button class="md:hidden p-2" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu w-6 h-6"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button></div></header><main class="max-w-6xl mx-auto px-4 sm:px-6 py-8"><div class="space-y-10"><header class="grid md:grid-cols-[1fr_auto] gap-4 items-start"><div><p class="typewriter text-xs uppercase tracking-widest text-[var(--note-ink)]/60">Log Entry No. 04 • Academic &amp; Self-Directed</p><h1 class="handwritten text-5xl font-bold flex items-center gap-2 mt-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap w-9 h-9"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path><path d="M22 10v6"></path><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path></svg> Education &amp; Learning Log</h1><p class="text-base leading-relaxed max-w-2xl mt-2">honestly, nothing beats an obsession with curiosity — chasing the next thing that makes the brain itch until it's scratched.</p></div><div class="flex flex-col gap-2 typewriter text-[10px] uppercase"><span class="bg-[#FFF380] ink-border px-3 py-1.5 rounded-sm">Major Path: CS &amp; Interaction</span><span class="bg-[#FFCCBC] ink-border px-3 py-1.5 rounded-sm">Focus: Interactive Systems</span><span class="bg-[#C8E6C9] ink-border px-3 py-1.5 rounded-sm">Self-Taught: Countless hrs</span></div></header><section><div class="border-2 border-blue-700 inline-block px-3 py-1 typewriter text-[11px] uppercase font-bold text-blue-800 mb-4 rounded-sm">Section A // Formal Foundations</div><div class="grid lg:grid-cols-[1fr_280px] gap-5"><div class="space-y-5"><div class="bg-white ink-border rounded-sm p-4 shadow-note"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h3 class="handwritten text-2xl font-bold">Canadian Maple International School</h3><span class="bg-blue-100 border border-blue-400 typewriter text-[10px] uppercase px-2 py-0.5 rounded-sm">Cambridge Curriculum</span></div><div class="flex flex-wrap gap-2 typewriter text-[10px] uppercase"><span class="bg-[#C8E6C9] ink-border px-2 py-0.5 rounded-sm">Enrolled</span><span class="bg-[#FFF380] ink-border px-2 py-0.5 rounded-sm">Current</span><span class="bg-[#E3F2FD] ink-border px-2 py-0.5 rounded-sm">Grade 5</span><span class="bg-[#FFCCBC] ink-border px-2 py-0.5 rounded-sm">Advanced Standing / Honors</span></div></div><div><p class="typewriter text-[11px] uppercase font-bold mb-3 text-[var(--note-ink)]/70">Previous Foundations</p><div class="grid sm:grid-cols-2 gap-3"><div class="bg-white ink-border rounded-sm p-3 shadow-note"><h4 class="handwritten text-xl font-bold leading-tight">Playpen School</h4><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/60">Local Foundation</p><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Early Years</p></div><div class="bg-white ink-border rounded-sm p-3 shadow-note"><h4 class="handwritten text-xl font-bold leading-tight">Al-Hidayah</h4><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/60">Islamic Studies</p><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Primary</p></div><div class="bg-white ink-border rounded-sm p-3 shadow-note"><h4 class="handwritten text-xl font-bold leading-tight">CIDER</h4><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/60">Inclusive Ed.</p><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Bridge Program</p></div><div class="bg-white ink-border rounded-sm p-3 shadow-note"><h4 class="handwritten text-xl font-bold leading-tight">Bangladesh Elementary</h4><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/60">National Curriculum</p><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Grades 1-4</p></div></div></div></div><aside class="bg-[#E3F2FD] border-2 border-blue-700 rounded-sm p-4 shadow-note h-fit"><div class="typewriter text-[11px] uppercase font-bold text-blue-800 mb-2">Milestone • Secondary Target</div><h3 class="handwritten text-2xl font-bold mb-1">Approaching O-Levels</h3><p class="typewriter text-[10px] uppercase text-blue-800 mb-3">Target: Cambridge IGCSE / O-Levels</p><p class="text-sm leading-relaxed text-[var(--note-ink)]/80 mb-3">Started with HTML on a borrowed laptop, then Pascal, then C — each one felt like a secret handshake with the machine. The graph paper and physics notebooks came right after.</p><div class="border-t-2 border-dashed border-blue-700/40 pt-2 handwritten text-lg italic text-blue-900">"Pencils, graph papers, and physics notebooks."</div></aside></div></section><section><div class="border-2 border-blue-700 inline-block px-3 py-1 typewriter text-[11px] uppercase font-bold text-blue-800 mb-4 rounded-sm">Section B // Self-Taught Curriculum &amp; Specializations</div><div class="grid md:grid-cols-2 gap-5"><div class="bg-white ink-border rounded-sm p-5 shadow-note"><div class="flex items-center justify-between mb-2"><h3 class="handwritten text-2xl font-bold">Cool Bababoey UI/UX Design</h3><span class="bg-[#C8E6C9] ink-border typewriter text-[10px] uppercase px-2 py-0.5 rounded-sm">Completed &amp; Certified Pro</span></div><p class="text-sm leading-relaxed mb-3">Hundreds of hours sketching wireframes, breaking grids, and rebuilding them until the affordances felt obvious. The certificate is just paper; the muscle memory is the real diploma.</p><div class="flex flex-wrap gap-1.5 mb-3"><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">rectangle pusher</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">figma auto-layout sorcery</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">vibes &amp; affordances</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">certified pixel perfectionist</span></div><div class="border-t border-dashed border-[var(--note-ink)]/30 pt-2 typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Curated through: Refactoring UI, Nielsen Norman, 3am Reddit rabbit holes • Self-Guided</div></div><div class="bg-white ink-border rounded-sm p-5 shadow-note"><div class="flex items-center justify-between mb-2"><h3 class="handwritten text-2xl font-bold">Ilm Enslavement</h3><span class="bg-[#FFCCBC] ink-border typewriter text-[10px] uppercase px-2 py-0.5 rounded-sm">Ongoing</span></div><p class="text-sm leading-relaxed mb-3">AI-assisted coding adventures — where the GPU fan screams, the model apologizes, and the div still won't center. A loving, slightly unhinged partnership with the machine.</p><div class="flex flex-wrap gap-1.5 mb-3"><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">gpu fan screaming</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">emotional manipulation (prompts)</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">apology accepted now fix the div</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">vibe coder supreme</span><span class="typewriter text-[10px] uppercase px-2 py-1 bg-[var(--note-rule)]/50 rounded-sm border border-[var(--note-rule)]">jailbreak engineer</span></div><div class="border-t border-dashed border-[var(--note-ink)]/30 pt-2 typewriter text-[10px] uppercase text-[var(--note-ink)]/50">Source: ChatGPT apology logs, 4am stackoverflow hallucinations • Ongoing</div></div></div></section><div class="bg-[#FFF380] ink-border rounded-sm p-4"><div class="flex items-center gap-2 mb-2 typewriter text-[11px] uppercase font-bold"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil w-4 h-4"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg> Always Learning</div><p class="handwritten text-2xl leading-tight mb-1">"Always learning, sketching, and breaking production to see how it works."</p><p class="typewriter text-[10px] uppercase text-[var(--note-ink)]/60">Currently reading: Meme design papers &amp; WebGL shaders at 3am.</p><p class="handwritten text-xl mt-2">— Tanshir Al Musnad (TAM)</p></div></div></main><footer class="border-t-2 border-[var(--note-ink)] mt-12 bg-[var(--note-cream)]"><div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 typewriter text-[11px] uppercase"><span>Vol. 2024 / Notebook Ed. • Drafted with fountain ink &amp; code</span><span>© Tanshir Al Musnad. All handwritten thoughts reserved.</span></div></footer></div><div role="region" aria-label="Notifications (F8)" tabindex="-1" style="pointer-events: none;"><ol tabindex="-1" class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"></ol></div></div>
+ 
+
+<div id="base44-edit-badge" dir="ltr" style="position: fixed; z-index: 999999; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 8px; background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); padding: 8px 12px; border-radius: 6px; box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px; cursor: pointer; transition: box-shadow 0.2s; border: 1px solid rgb(38, 38, 38); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 14px;">
+      <img src="https://media.base44.com/images/public/builder-assets/symbol-orange.png" alt="base44" style="width: 20px; height: 20px;">
+      <span style="white-space: nowrap; font-size: 12px;">
+        <span id="badge-content">
+          <div style="display: flex; align-items: center; gap: 6px; justify-content: center; font-size: 14px;">
+            <span>Edit with </span>
+            <span style="margin-bottom: 2px;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARAAAABECAMAAAB+vJpyAAAACXBIWXMAACxLAAAsSwGlPZapAAAAAXNSR0IArs4c6QAAAEVQTFRFAAAA////////////////////////////////////////////////////////////////////////////////////////Up1zwgAAABZ0Uk5TABAgMEBQX2BvcH+Aj5CfoK+wv8/f741pbhwAAAVHSURBVHja7ZvtbuwoDECNQ5ZNSZgsAd7/Ufeq6i0Ex3Y6I1WJNOdv3RlyGvAHKrx58+bNmzdvfg0v4OwAN8P5BnH16FsM/KUoxNnCffi3tDgQCKUFqxCd5OAmYCFCdHVUiE5CuAXptBDMohCdD7gBczktJBVVyP2NuNLhBHWaEB0LFwcTESKoe11IMnBtYulxvDpdiI6HS/NRCE5UpwvJqaX05ItnXIoT1elCPOwY3HqfU8QkTQhVpwtRNtsE1yUUTQhVpwtR6pdwi5I9KUJCeUUI+FKJcFUwVx+eCOHULVETomy4dIOSPSMRwqqDZ4QAEXLtjDuBLCQ1Dp4TkoQtg25ev/Jziqu30EAD81fcZIHFjDVwdginsO0xR4Rw6jw8JySXb/6DFvORSs/qgEIDU7CHNlzsAyf8UcmeUBYytn/d54QYJu1iODk7MXMuB8SBHneHgQF/kHFHIEJYdU8KsaUyCIuvzAYabBbjKsNWTimWd4EsZO1+pAqR9ad2EQKbOReYEFTD+uQB2wUSIZy6BX4shD6Q0x6THr5O6Z9PfmI4V7IjEcKqM88JMfNh0h2KwlSTvkjQfOjvyEyWT4Rw6nQhwba4OZaGjMz4bQuLDzHvYs1BlZw+42i7SA3nLcat7Bj1Sc8KVAirThWiM7a5q/J9oeESedewlT0cxcWDdusrJaNLRLGccRkhVF2E14Vke9wdWag8+u3lDncjbqVi+gFnsjVwUadTkTw8FUJLdnxdSESoZG6ZW/f5ayuoYvJ+ydhlqIonr4iQNmQhpAc+LUQtjpCdoTk2zQdo8XujgZ/bRuKeTRusEKruJSFUiWWbG9N968YEDumbpeu3+N40itMrBFGIJerOC9EzH35j2M44dN9nz7ZmfG1phJrRAyuEqntJCNneEtj1ges+dzAsjLY+ozl+0hOBF0LV6UJeN4LjFLbc59OptOQ4j4OYKbLoeOEnPcgJEdXpQrawY41Zr6CNneaYS0+sm0Gz0k7/KN1Lx6QNUQgWRt0TvYx9lBZLhzlCO1O/kFqx5B1QSVzGDSAKMaw6XYh265daG1Hv72xhSQGBjdGFjCRtsEJmou5pIbSutqRbF4WA1/OWLWdhGzVRiCPqXhBCVrzU6lsVohvZ8FkhWE7hyAo0BCGV3L+2Qy5nhYBLYt66pZC1VAzrI62LOxAC+BD0zbcU8igV/D5mK3kLkzXwh+N8b9yaCoMFvLmQbroVlxHhCyqkMox+3QplAUN+ieOSWwb3N1cWGtRnM3Z6dFZy+3npJkJSqRgYSc6R+2Cl2MPWN95CiN3/wsKvP+yFYMWwxZ6FSVoAVsxVhHQz0JV9C3AfCCv7Lk3MqZqN8JH2GkJM2J+BEFkhWyek2Rob+5x2Vy/O/IwwQwvyLHshBnmaFVv8RBNiPnLf3a1ctx5KJ2Ri20K7ux4d2QuY4dRllVS6S+ile/Q7wpoO+qsHc/m9kUrV0GtL6q5uSmrkn0yU/pqQ83tyOlr9MOeD0j0eX1mbWZib1EAbySzmakISuWXLq3duCunMgGibLP5hnDO5L166cUnwYe0M41WE0Nc+ChFkQKSQajcvM8H1hORBm+gkR+8oZbBWJiIeriOEHosLa8xWIcKDkgWrgR6uJ2Qx9VDcGB9AhIgPmh1UzEOKu5YQ2sUtzPUvFQLgtftibZS0IlxLSI6TASCLp8aOhQA+EqtYVZKDBfhdIVFgDd4NBo5wTV5Mi4VPhviXuWtwt04xwiF2aQNTcAZ+jIvfaDKXGmrgdYZx8t670ZyMdv4Pk7MIEsaO02fcYN7/Zf7mzfX5H+WZeZXgxfH6AAAAAElFTkSuQmCC" alt="Base44" height="18" width="56"></span>
+          </div>
+        </span>
+      </span>
+      <button id="badge-close" aria-label="Close badge" style="
+          padding: 2px;
+          margin-left: 2px;
+          border-radius: 9999px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div></body></html>

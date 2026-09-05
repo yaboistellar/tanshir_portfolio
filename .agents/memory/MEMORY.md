@@ -1,0 +1,1 @@
+- [Headless page extraction](headless-page-extraction.md) — remote pages render reliably with Chromium's newer headless mode and shared-memory workaround.
