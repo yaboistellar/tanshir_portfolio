@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowRight,
@@ -170,13 +170,53 @@ function SiteFrame({
   );
 }
 
+type FormStatus = 'idle' | 'sending' | 'success' | 'error';
+
 function HomePage() {
-  const [sent, setSent] = useState(false);
+  const [formStatus, setFormStatus] = useState<FormStatus>('idle');
+  const [formError, setFormError] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
   const portraitSrc = `${import.meta.env.BASE_URL}images/tanshir-portrait.webp`;
 
-  function submitNote(event: FormEvent<HTMLFormElement>) {
+  async function submitNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSent(true);
+    setFormStatus('sending');
+    setFormError('');
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const body = {
+      access_key: import.meta.env.VITE_WEB3FORMS_KEY,
+      subject: 'New Note from Portfolio — ' + (data.get('name') as string),
+      from_name: data.get('name') as string,
+      email: data.get('email') as string,
+      message: (data.get('message') as string) +
+        '\n\nServices requested: ' + [
+          (data.get('ux') ? 'Full UI/UX Sprint' : null),
+          (data.get('code') ? 'Code / Frontend' : null),
+        ].filter(Boolean).join(', '),
+      replyto: data.get('email') as string,
+    };
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json() as { success: boolean; message?: string };
+      if (json.success) {
+        setFormStatus('success');
+        form.reset();
+      } else {
+        setFormStatus('error');
+        setFormError(json.message ?? 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setFormStatus('error');
+      setFormError('Network error — please check your connection and try again.');
+    }
   }
 
   const projects = [
@@ -314,25 +354,38 @@ function HomePage() {
           <p className="section-kicker typewriter"><Send aria-hidden="true" /> Pass a Note in Class</p>
           <h2 className="home-section-title handwritten">Got a project in mind? Drop a note.</h2>
           <div className="squiggle" aria-hidden="true" />
-          <form className="contact-form ink-border shadow-note" onSubmit={submitNote}>
+          <form className="contact-form ink-border shadow-note" onSubmit={submitNote} ref={formRef}>
             <label>
               <span className="typewriter">01. Your Name / Company *</span>
-              <input required placeholder="Write your name here…" />
+              <input name="name" required placeholder="Write your name here…" />
             </label>
             <label>
               <span className="typewriter">02. Electronic Post Address (Email) *</span>
-              <input required type="email" placeholder="you@inbox.com" />
+              <input name="email" required type="email" placeholder="you@inbox.com" />
             </label>
             <label>
               <span className="typewriter">03. The Note (Brief, Scope, Timeline, or just say hello!) *</span>
-              <textarea required rows={4} placeholder="Fold your note here…" />
+              <textarea name="message" required rows={4} placeholder="Fold your note here…" />
             </label>
             <div className="contact-checks typewriter">
-              <label><input type="checkbox" /> Full UI/UX Sprint</label>
-              <label><input type="checkbox" /> Code / Frontend</label>
+              <label><input type="checkbox" name="ux" /> Full UI/UX Sprint</label>
+              <label><input type="checkbox" name="code" /> Code / Frontend</label>
             </div>
-            <button className="ink-button handwritten" type="submit"><Send aria-hidden="true" /> Fold &amp; Send Note</button>
-            {sent && <p className="sent-note typewriter">Note folded and queued for a fresh cup of coffee.</p>}
+            <button
+              className="ink-button handwritten"
+              type="submit"
+              disabled={formStatus === 'sending'}
+              style={{ opacity: formStatus === 'sending' ? 0.65 : 1 }}
+            >
+              <Send aria-hidden="true" />
+              {formStatus === 'sending' ? 'Sending…' : 'Fold & Send Note'}
+            </button>
+            {formStatus === 'success' && (
+              <p className="sent-note typewriter">✓ Note folded and sent! I'll reply within 24h of a fresh cup of coffee.</p>
+            )}
+            {formStatus === 'error' && (
+              <p className="sent-note typewriter" style={{ color: 'var(--note-accent)' }}>✗ {formError}</p>
+            )}
             <div className="contact-links typewriter">
               <div>
                 <a href="https://github.com/yaboistellar/tanshir_portfolio" target="_blank" rel="noopener noreferrer"><Github aria-hidden="true" /> GitHub</a>
