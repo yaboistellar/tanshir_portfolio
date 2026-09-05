@@ -8,10 +8,13 @@ import {
   Coffee,
   Cpu,
   Eraser,
+  Facebook,
   FileText,
   Github,
   GraduationCap,
   Hourglass,
+  Instagram,
+  Linkedin,
   Lock,
   Menu,
   MousePointerClick,
@@ -20,7 +23,6 @@ import {
   PenTool,
   Play,
   Quote,
-  Rss,
   Send,
   Sparkles,
   Star,
@@ -333,10 +335,10 @@ function HomePage() {
             {sent && <p className="sent-note typewriter">Note folded and queued for a fresh cup of coffee.</p>}
             <div className="contact-links typewriter">
               <div>
-                <a href="#"><Github aria-hidden="true" /> GitHub</a>
-                <a href="#">Figma</a>
-                <a href="#"><span className="social-letter">𝕏</span> X / Twitter</a>
-                <a href="#"><Rss aria-hidden="true" /> Substack</a>
+                <a href="https://github.com/yaboistellar/tanshir_portfolio" target="_blank" rel="noopener noreferrer"><Github aria-hidden="true" /> GitHub</a>
+                <a href="https://www.instagram.com/curtainsyh/" target="_blank" rel="noopener noreferrer"><Instagram aria-hidden="true" /> Instagram</a>
+                <a href="https://web.facebook.com/profile.php?id=61590300914480" target="_blank" rel="noopener noreferrer"><Facebook aria-hidden="true" /> Facebook</a>
+                <a href="https://www.linkedin.com/in/tanshir-al-musnad-020914424/" target="_blank" rel="noopener noreferrer"><Linkedin aria-hidden="true" /> LinkedIn</a>
               </div>
               <span>schedule: Usually replies within 24h of fresh brewed coffee</span>
             </div>
