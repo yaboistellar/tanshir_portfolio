@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import Lenis from 'lenis';
 import {
   ArrowDown,
   ArrowRight,
@@ -173,6 +174,54 @@ interface MarginStamp {
   rot: number;
 }
 
+function InkCursorFollower() {
+  const [active, setActive] = useState(false);
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const ringX = useSpring(cursorX, { stiffness: 450, damping: 28 });
+  const ringY = useSpring(cursorY, { stiffness: 450, damping: 28 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.closest('button') ||
+          target.closest('a') ||
+          target.closest('input') ||
+          target.closest('textarea') ||
+          target.closest('.project-card') ||
+          target.closest('.toolkit-card'))
+      ) {
+        setActive(true);
+      } else {
+        setActive(false);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [cursorX, cursorY]);
+
+  return (
+    <>
+      <motion.div
+        className="ink-cursor-dot"
+        style={{ left: cursorX, top: cursorY }}
+        aria-hidden="true"
+      />
+      <motion.div
+        className={`ink-cursor-ring${active ? ' active' : ''}`}
+        style={{ left: ringX, top: ringY }}
+        aria-hidden="true"
+      />
+    </>
+  );
+}
+
 function SiteFrame({
   page,
   children,
@@ -185,6 +234,42 @@ function SiteFrame({
   const [stamps, setStamps] = useState<MarginStamp[]>([]);
   const stampIndexRef = useRef(0);
   const doodleSymbols = ['✦', '✎', '☕', '★', '〰', '✧', '♡', '◇', '◡'];
+
+  // Initialize Lenis smooth inertia momentum scroll
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    // Smooth anchor link gliding with Lenis
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a[href^="#"]');
+      if (target) {
+        const href = target.getAttribute('href');
+        if (href && href.startsWith('#') && href.length > 1) {
+          e.preventDefault();
+          lenis.scrollTo(href, { offset: -60, duration: 1.4 });
+        }
+      }
+    };
+
+    document.addEventListener('click', handleAnchorClick);
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick);
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
 
   const handlePageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     // Only stamp if clicked on empty/notebook background areas (not interactive forms/buttons/inputs)
@@ -222,6 +307,7 @@ function SiteFrame({
 
   return (
     <div className={`notebook-page ${className}`} onClick={handlePageClick}>
+      <InkCursorFollower />
       <ScrollProgressBar />
       {stamps.map((stamp) => (
         <span
@@ -432,6 +518,24 @@ function HomePage() {
     },
   };
 
+  const portraitMouseX = useMotionValue(0);
+  const portraitMouseY = useMotionValue(0);
+  const portraitRotateX = useSpring(useTransform(portraitMouseY, [-100, 100], [10, -10]), { stiffness: 240, damping: 20 });
+  const portraitRotateY = useSpring(useTransform(portraitMouseX, [-100, 100], [-10, 10]), { stiffness: 240, damping: 20 });
+
+  const handlePortraitMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    portraitMouseX.set(e.clientX - centerX);
+    portraitMouseY.set(e.clientY - centerY);
+  };
+
+  const handlePortraitMouseLeave = () => {
+    portraitMouseX.set(0);
+    portraitMouseY.set(0);
+  };
+
   return (
     <SiteFrame page="home" className="home-page">
       <div className="home-content">
@@ -444,7 +548,10 @@ function HomePage() {
           <motion.div
             className="portrait-frame ink-border shadow-note"
             variants={heroItemVariants}
-            whileHover={{ scale: 1.03, rotate: 1.5 }}
+            style={{ rotateX: portraitRotateX, rotateY: portraitRotateY, transformPerspective: 800 }}
+            onMouseMove={handlePortraitMouseMove}
+            onMouseLeave={handlePortraitMouseLeave}
+            whileHover={{ scale: 1.05 }}
             transition={{ type: 'spring', stiffness: 260, damping: 18 }}
           >
             <motion.div
