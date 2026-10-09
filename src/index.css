@@ -1515,20 +1515,38 @@ a:focus-visible {
 
 .game-note {
   background: #fff;
+  color: var(--note-ink);
   padding: 16px;
+}
+
+.game-note .note-kicker {
+  color: var(--note-ink);
 }
 
 .yellow-note {
   min-height: 140px;
   background: var(--note-yellow);
+  color: #1f2421;
+}
+
+.yellow-note .note-kicker,
+.yellow-note p {
+  color: #1f2421;
 }
 
 .peach-note {
-  background: #ffe0b2;
+  background: #ffd8b2;
+  color: #2d1810;
+}
+
+.peach-note .note-kicker,
+.peach-note p {
+  color: #2d1810;
 }
 
 .game-note p {
   margin: 0;
+  color: var(--note-ink);
 }
 
 .yellow-note p,
@@ -1538,8 +1556,8 @@ a:focus-visible {
 }
 
 .game-note > p:last-child {
-  color: rgb(26 26 26 / 60%);
-  font-size: 10px;
+  color: var(--note-muted);
+  font-size: 11px;
 }
 
 .shavings-bar {
@@ -1548,13 +1566,14 @@ a:focus-visible {
   border: 2px solid var(--note-ink);
   border-radius: 2px;
   background: var(--note-cream);
+  margin: 6px 0 8px;
 }
 
 .shavings-bar span {
   display: block;
   width: 0;
   height: 100%;
-  background: #a88f78;
+  background: var(--note-accent);
 }
 
 .draft-section {
@@ -2887,6 +2906,8 @@ html.lenis, html.lenis body {
 }
 
 .dark .white-note,
+.dark .game-note,
+.dark .draft-card,
 .dark .project-card,
 .dark .toolkit-card,
 .dark .contact-form,
@@ -2912,6 +2933,20 @@ html.lenis, html.lenis body {
 .dark .yellow-note {
   background: #2d383e;
   border-color: var(--note-ink);
+}
+
+.dark .peach-note {
+  background: #362925;
+  border-color: var(--note-ink);
+}
+
+.dark .yellow-note .note-kicker,
+.dark .yellow-note p,
+.dark .peach-note .note-kicker,
+.dark .peach-note p,
+.dark .game-note .note-kicker,
+.dark .game-note p {
+  color: var(--note-ink);
 }
 
 .dark .note-card span:last-child,
