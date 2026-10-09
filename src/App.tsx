@@ -867,6 +867,74 @@ function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
   );
 }
 
+function Interactive3DBox({
+  children,
+  className = '',
+  style = {},
+  glare = true,
+  maxTilt = 10,
+  depth = 18,
+  whileHoverScale = 1.025,
+  onClick,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  glare?: boolean;
+  maxTilt?: number;
+  depth?: number;
+  whileHoverScale?: number;
+  onClick?: () => void;
+}) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(y, [-100, 100], [maxTilt, -maxTilt]), { stiffness: 280, damping: 22 });
+  const rotateY = useSpring(useTransform(x, [-100, 100], [-maxTilt, maxTilt]), { stiffness: 280, damping: 22 });
+  const glareOpacity = useSpring(useTransform(y, [-100, 100], [0.26, 0]), { stiffness: 280, damping: 22 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set(e.clientX - centerX);
+    y.set(e.clientY - centerY);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  return (
+    <motion.div
+      className={`card-3d ${className}`}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: 'preserve-3d',
+        ...style,
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      whileHover={{ scale: whileHoverScale, z: depth }}
+      transition={{ duration: 0.22, ease: 'easeOut' as const }}
+      onClick={onClick}
+    >
+      {glare && (
+        <motion.div
+          className="card-glare"
+          style={{ opacity: glareOpacity }}
+          aria-hidden="true"
+        />
+      )}
+      <div style={{ transform: `translateZ(${depth}px)`, transformStyle: 'preserve-3d', width: '100%' }}>
+        {children}
+      </div>
+    </motion.div>
+  );
+}
+
 type FormStatus = 'idle' | 'sending' | 'success' | 'error';
 type ProjectFilter = 'all' | 'ux' | 'web' | 'code';
 
@@ -1120,19 +1188,11 @@ function HomePage() {
             </motion.div>
           </div>
           <motion.div className="home-stats" variants={heroItemVariants} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-            <motion.div
-              className="note-card cream-note"
-              whileHover={{ y: -4, rotate: -0.8 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
+            <Interactive3DBox className="note-card cream-note" maxTilt={8} depth={16}>
               <div className="typewriter note-kicker">Field Metrics</div>
               <p className="handwritten">nothing but a lot of self teaching which worked out pretty well</p>
-            </motion.div>
-            <motion.div
-              className="note-card white-note"
-              whileHover={{ y: -4, rotate: 1.2 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
+            </Interactive3DBox>
+            <Interactive3DBox className="note-card white-note" maxTilt={8} depth={16}>
               <div className="typewriter note-kicker">
                 <motion.span
                   animate={{ rotate: [0, -6, 6, 0] }}
@@ -1145,12 +1205,8 @@ function HomePage() {
               </div>
               <p className="handwritten">Harry Potter</p>
               <span className="typewriter">by J.K. Rowling • Ch. 4 (Notes taken)</span>
-            </motion.div>
-            <motion.div
-              className="note-card yellow-note"
-              whileHover={{ y: -4, rotate: -1.2 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
+            </Interactive3DBox>
+            <Interactive3DBox className="note-card yellow-note" maxTilt={8} depth={16}>
               <div className="typewriter note-kicker">
                 <motion.span
                   animate={{ rotate: [0, 15, -15, 0] }}
@@ -1163,7 +1219,7 @@ function HomePage() {
               </div>
               <p className="handwritten">Live WebGL geometric desk universe covering the page</p>
               <span className="typewriter" style={{ fontSize: '10px', opacity: 0.7 }}>Move cursor anywhere to tilt &amp; orbit</span>
-            </motion.div>
+            </Interactive3DBox>
           </motion.div>
           <ScrollDownIndicator targetId="projects" />
         </motion.section>
@@ -1224,28 +1280,34 @@ function HomePage() {
           <p className="section-subtitle handwritten">tested &amp; coffee-approved everyday carry</p>
           <div className="toolkit-grid">
             {toolkit.map((tool, index) => (
-              <motion.article
-                className="toolkit-card ink-border shadow-note"
+              <motion.div
                 key={tool.name}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' as const }}
-                whileHover={{ y: -5 }}
+                style={{ height: '100%' }}
               >
-                <div className="toolkit-name">
-                  <motion.span
-                    className="toolkit-icon"
-                    whileHover={{ rotate: [0, -12, 12, -6, 0], scale: 1.15 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {tool.icon}
-                  </motion.span>
-                  <span className="handwritten">{tool.name}</span>
-                </div>
-                <p className="typewriter">{tool.kind}</p>
-                <div className="handwritten">{tool.detail}</div>
-              </motion.article>
+                <Interactive3DBox
+                  className="toolkit-card ink-border shadow-note"
+                  maxTilt={12}
+                  depth={20}
+                  style={{ height: '100%' }}
+                >
+                  <div className="toolkit-name">
+                    <motion.span
+                      className="toolkit-icon"
+                      whileHover={{ rotate: [0, -12, 12, -6, 0], scale: 1.15 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      {tool.icon}
+                    </motion.span>
+                    <span className="handwritten">{tool.name}</span>
+                  </div>
+                  <p className="typewriter">{tool.kind}</p>
+                  <div className="handwritten">{tool.detail}</div>
+                </Interactive3DBox>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -1282,92 +1344,93 @@ function HomePage() {
               transition={{ duration: 1.2, ease: 'easeInOut' }}
             />
           </svg>
-          <motion.form
-            className="contact-form ink-border shadow-note"
-            onSubmit={submitNote}
-            ref={formRef}
-            whileHover={{ boxShadow: '4px 6px 0 rgb(26 26 26 / 16%)' }}
-          >
-            <label>
-              <span className="typewriter">01. Your Name / Company *</span>
-              <input name="name" required placeholder="Write your name here…" />
-            </label>
-            <label>
-              <span className="typewriter">02. Electronic Post Address (Email) *</span>
-              <input name="email" required type="email" placeholder="you@inbox.com" />
-            </label>
-            <label>
-              <span className="typewriter">03. The Note (Brief, Scope, Timeline, or just say hello!) *</span>
-              <textarea name="message" required rows={4} placeholder="Fold your note here…" />
-            </label>
-            <div className="contact-checks typewriter">
-              <label>
-                <input type="checkbox" name="ux" /> Full UI/UX Sprint
-              </label>
-              <label>
-                <input type="checkbox" name="code" /> Code / Frontend
-              </label>
-            </div>
-            <motion.button
-              className="ink-button handwritten"
-              type="submit"
-              disabled={formStatus === 'sending'}
-              style={{ opacity: formStatus === 'sending' ? 0.65 : 1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
+          <Interactive3DBox className="contact-card-wrap" maxTilt={5} depth={14} glare={false}>
+            <form
+              className="contact-form ink-border shadow-note"
+              onSubmit={submitNote}
+              ref={formRef}
             >
-              <motion.span
-                animate={formStatus === 'sending' ? { x: [0, 8, -4, 0] } : {}}
-                transition={{ repeat: Infinity, duration: 0.6 }}
-                style={{ display: 'inline-flex' }}
-              >
-                <Send aria-hidden="true" />
-              </motion.span>
-              {formStatus === 'sending' ? 'Folding & Sending…' : 'Fold & Send Note'}
-            </motion.button>
-            {formStatus === 'success' && (
-              <motion.p
-                className="sent-note typewriter"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                ✓ Note folded and sent! I&apos;ll reply within 24h of a fresh cup of coffee.
-              </motion.p>
-            )}
-            {formStatus === 'error' && (
-              <motion.p
-                className="sent-note typewriter"
-                style={{ color: 'var(--note-accent)' }}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                ✗ {formError}
-              </motion.p>
-            )}
-            <div className="contact-links typewriter">
-              <div>
-                {[
-                  { label: 'GitHub', href: 'https://github.com/yaboistellar/tanshir_portfolio', icon: <Github aria-hidden="true" /> },
-                  { label: 'Instagram', href: 'https://www.instagram.com/curtainsyh/', icon: <Instagram aria-hidden="true" /> },
-                  { label: 'Facebook', href: 'https://web.facebook.com/profile.php?id=61590300914480', icon: <Facebook aria-hidden="true" /> },
-                  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/tanshir-al-musnad-020914424/', icon: <Linkedin aria-hidden="true" /> },
-                ].map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ y: -2, scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    {social.icon} {social.label}
-                  </motion.a>
-                ))}
+              <label>
+                <span className="typewriter">01. Your Name / Company *</span>
+                <input name="name" required placeholder="Write your name here…" />
+              </label>
+              <label>
+                <span className="typewriter">02. Electronic Post Address (Email) *</span>
+                <input name="email" required type="email" placeholder="you@inbox.com" />
+              </label>
+              <label>
+                <span className="typewriter">03. The Note (Brief, Scope, Timeline, or just say hello!) *</span>
+                <textarea name="message" required rows={4} placeholder="Fold your note here…" />
+              </label>
+              <div className="contact-checks typewriter">
+                <label>
+                  <input type="checkbox" name="ux" /> Full UI/UX Sprint
+                </label>
+                <label>
+                  <input type="checkbox" name="code" /> Code / Frontend
+                </label>
               </div>
-              <span>schedule: Usually replies within 24h of fresh brewed coffee</span>
-            </div>
-          </motion.form>
+              <motion.button
+                className="ink-button handwritten"
+                type="submit"
+                disabled={formStatus === 'sending'}
+                style={{ opacity: formStatus === 'sending' ? 0.65 : 1 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <motion.span
+                  animate={formStatus === 'sending' ? { x: [0, 8, -4, 0] } : {}}
+                  transition={{ repeat: Infinity, duration: 0.6 }}
+                  style={{ display: 'inline-flex' }}
+                >
+                  <Send aria-hidden="true" />
+                </motion.span>
+                {formStatus === 'sending' ? 'Folding & Sending…' : 'Fold & Send Note'}
+              </motion.button>
+              {formStatus === 'success' && (
+                <motion.p
+                  className="sent-note typewriter"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ✓ Note folded and sent! I&apos;ll reply within 24h of a fresh cup of coffee.
+                </motion.p>
+              )}
+              {formStatus === 'error' && (
+                <motion.p
+                  className="sent-note typewriter"
+                  style={{ color: 'var(--note-accent)' }}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ✗ {formError}
+                </motion.p>
+              )}
+              <div className="contact-links typewriter">
+                <div>
+                  {[
+                    { label: 'GitHub', href: 'https://github.com/yaboistellar/tanshir_portfolio', icon: <Github aria-hidden="true" /> },
+                    { label: 'Instagram', href: 'https://www.instagram.com/curtainsyh/', icon: <Instagram aria-hidden="true" /> },
+                    { label: 'Facebook', href: 'https://web.facebook.com/profile.php?id=61590300914480', icon: <Facebook aria-hidden="true" /> },
+                    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/tanshir-al-musnad-020914424/', icon: <Linkedin aria-hidden="true" /> },
+                  ].map((social) => (
+                    <motion.a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ y: -2, scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      {social.icon} {social.label}
+                    </motion.a>
+                  ))}
+                </div>
+                <span>schedule: Usually replies within 24h of fresh brewed coffee</span>
+              </div>
+            </form>
+          </Interactive3DBox>
         </motion.section>
       </div>
     </SiteFrame>
@@ -1443,6 +1506,23 @@ function GamesPage() {
   const [roundResult, setRoundResult] = useState<string | null>(null);
   const [score, setScore] = useState({ X: 0, O: 0, ties: 0 });
 
+  const heroContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    },
+  };
+
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' as const },
+    },
+  };
+
   function finishRound(nextBoard: TicTacToeMark[]) {
     const winner = getTicTacToeWinner(nextBoard);
     if (winner) {
@@ -1499,70 +1579,183 @@ function GamesPage() {
   return (
     <SiteFrame page="games">
       <div className="games-content">
-        <header className="page-intro">
-          <p className="eyebrow typewriter">Arcade Ed.</p>
-          <div className="yellow-sticker typewriter">Study Break • Period 4 Free Time</div>
-          <h1 className="page-title handwritten"><Pencil aria-hidden="true" /> Doodle Arcade &amp; Playground</h1>
-          <p className="page-description">Handcrafted mini-games scribbled during long study sessions. Grab your pen, pick a game, and play directly on the notebook paper!</p>
-        </header>
+        <motion.header
+          className="page-intro home-hero"
+          variants={heroContainerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ gridTemplateColumns: '1fr', minHeight: 'auto', paddingTop: 0 }}
+        >
+          <ThreeBackgroundScene />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
+              • Page 12 • Arcade Edition
+            </motion.p>
+            <motion.div
+              className="yellow-sticker typewriter"
+              variants={heroItemVariants}
+              whileHover={{ scale: 1.04, rotate: -1 }}
+            >
+              Study Break • Period 4 Free Time
+            </motion.div>
+            <h1 className="page-title handwritten" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              {['Doodle', 'Arcade', '&', 'Playground'].map((word, i) => (
+                <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
+                  <motion.span
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: '120%', opacity: 0, rotate: i % 2 === 0 ? 3 : -3 }}
+                    animate={{ y: '0%', opacity: 1, rotate: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 + i * 0.08, ease: 'easeOut' as const }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+              <motion.span
+                animate={{ rotate: [0, 15, -15, 0] }}
+                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1.2 }}
+                style={{ display: 'inline-flex' }}
+              >
+                <Pencil aria-hidden="true" />
+              </motion.span>
+            </h1>
+            <motion.p className="page-description" variants={heroItemVariants}>
+              Handcrafted mini-games scribbled during long study sessions. Grab your pen, pick a game, and play directly on the notebook paper with full 3D interactive feedback!
+            </motion.p>
+          </div>
+        </motion.header>
+
         <div className="game-tabs typewriter">
-          <span className="selected">1. Tic-Tac-Toe Ink</span>
-          <span>2. Pencil Snake Grid</span>
-          <span>3. Scribble Cards Match</span>
+          <motion.span className="selected" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
+            1. Tic-Tac-Toe Ink
+          </motion.span>
+          <motion.span whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
+            2. Pencil Snake Grid
+          </motion.span>
+          <motion.span whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
+            3. Scribble Cards Match
+          </motion.span>
         </div>
+
         <div className="games-layout">
-          <section className="game-board-card ink-border shadow-note">
+          <Interactive3DBox className="game-board-card ink-border shadow-note" maxTilt={6} depth={16}>
             <h2 className="handwritten">Ink Duel • Tic-Tac-Toe (X&apos;s &amp; O&apos;s)</h2>
             <p className="typewriter muted-copy">Blue Ballpoint vs Crimson Pencil margin classic.</p>
             <div className="game-controls typewriter">
-              <button className="dark-control" type="button" disabled><Cpu aria-hidden="true" /> VS Paper AI</button>
-              <button type="button" onClick={eraseBoard}><Eraser aria-hidden="true" /> Erase Board</button>
+              <button className="dark-control" type="button" disabled>
+                <Cpu aria-hidden="true" /> VS Paper AI
+              </button>
+              <motion.button
+                type="button"
+                onClick={eraseBoard}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.92 }}
+              >
+                <Eraser aria-hidden="true" /> Erase Board
+              </motion.button>
             </div>
             <div className="typewriter game-turn">
               {roundResult ?? (aiThinking ? 'Paper AI is thinking…' : 'Your turn (Player X)!')}
             </div>
-            <div className="typewriter game-score">X Wins: {score.X} | O Wins: {score.O} | Ties: {score.ties}</div>
+            <div className="typewriter game-score">
+              X Wins: {score.X} | O Wins: {score.O} | Ties: {score.ties}
+            </div>
             <div className="tic-tac-toe">
               {board.map((mark, index) => (
-                <button key={index} type="button" onClick={() => markSquare(index)} aria-label={`Square ${index + 1}`}>
+                <motion.button
+                  key={index}
+                  type="button"
+                  onClick={() => markSquare(index)}
+                  aria-label={`Square ${index + 1}`}
+                  whileHover={{ scale: 1.06, backgroundColor: 'var(--note-surface-soft)' }}
+                  whileTap={{ scale: 0.92 }}
+                >
                   <span className={mark === 'O' ? 'red-mark' : ''}>{mark}</span>
-                </button>
+                </motion.button>
               ))}
             </div>
-            <div className="typewriter board-tip">X: Ballpoint Ink • O: Red Pencil Sketch — Tip: The paper AI never sleeps in math class.</div>
-          </section>
-          <aside className="game-aside">
-            <div className="game-note yellow-note ink-border shadow-note">
-              <div className="typewriter note-kicker"><StickyNote aria-hidden="true" /> Free Space</div>
+            <div className="typewriter board-tip">
+              X: Ballpoint Ink • O: Red Pencil Sketch — Tip: The paper AI never sleeps in math class.
+            </div>
+          </Interactive3DBox>
+
+          <aside className="game-aside" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Interactive3DBox className="game-note yellow-note ink-border shadow-note" maxTilt={10} depth={16}>
+              <div className="typewriter note-kicker">
+                <StickyNote aria-hidden="true" /> Free Space
+              </div>
               <p className="handwritten">Jot a doodle here while you think about your next move…</p>
-            </div>
-            <div className="game-note ink-border shadow-note">
+            </Interactive3DBox>
+            <Interactive3DBox className="game-note ink-border shadow-note" maxTilt={10} depth={16}>
               <div className="typewriter note-kicker">0 Shavings Collected</div>
-              <div className="shavings-bar"><span /></div>
-              <p className="typewriter"><Award aria-hidden="true" /> Sharpen 25 times to unlock golden chalk badge</p>
-            </div>
-            <div className="game-note peach-note ink-border shadow-note">
+              <div className="shavings-bar">
+                <span />
+              </div>
+              <p className="typewriter">
+                <Award aria-hidden="true" /> Sharpen 25 times to unlock golden chalk badge
+              </p>
+            </Interactive3DBox>
+            <Interactive3DBox className="game-note peach-note ink-border shadow-note" maxTilt={10} depth={16}>
               <div className="typewriter note-kicker">Quick Memo</div>
-              <p className="handwritten">Remember to close the notebook before Teacher Davies walks down row 3! Keep margins clean for algebra notes.</p>
-            </div>
+              <p className="handwritten">
+                Remember to close the notebook before Teacher Davies walks down row 3! Keep margins clean for algebra notes.
+              </p>
+            </Interactive3DBox>
           </aside>
         </div>
+
         <section className="draft-section">
-          <p className="section-kicker typewriter"><Pencil aria-hidden="true" /> In the Drafting Phase • Upcoming Notebook Game Drafts</p>
+          <p className="section-kicker typewriter">
+            <Pencil aria-hidden="true" /> In the Drafting Phase • Upcoming Notebook Game Drafts
+          </p>
           <h2 className="home-section-title handwritten">Blueprinted for Next Semester</h2>
           <div className="draft-grid">
             {[
-              ['Notebook Battleship', 'Grid Coordinates: A1 to J10', 'Graph paper sea warfare — call out coordinates and sink your classmate’s paper fleet before the bell rings.', 'Drafting 70%', '2 Players / Split Paper'],
-              ['Hangman Doodle Word', 'Vocabulary test survival', 'Guess vocabulary words one letter at a time. Each wrong guess adds a stroke to the doodled stick figure.', 'Concept Sketched', '1-4 Players / Pass Sheet'],
-              ['Physics Paper Ball', 'Crumpled Paper Toss', 'Aim your flick shot into the recycling bin across the room. Wind from the open window changes the trajectory.', 'Prototype', 'Physics Engine / High Score'],
-            ].map(([title, kicker, copy, badge, footer]) => (
-              <article className="draft-card ink-border shadow-note" key={title}>
-                <span className="draft-badge typewriter">{badge}</span>
-                <h3 className="handwritten">{title}</h3>
-                <p className="typewriter draft-kicker">{kicker}</p>
-                <p>{copy}</p>
-                <div className="typewriter draft-footer"><Lock aria-hidden="true" /> {footer}</div>
-              </article>
+              [
+                'Notebook Battleship',
+                'Grid Coordinates: A1 to J10',
+                'Graph paper sea warfare — call out coordinates and sink your classmate’s paper fleet before the bell rings.',
+                'Drafting 70%',
+                '2 Players / Split Paper',
+              ],
+              [
+                'Hangman Doodle Word',
+                'Vocabulary test survival',
+                'Guess vocabulary words one letter at a time. Each wrong guess adds a stroke to the doodled stick figure.',
+                'Concept Sketched',
+                '1-4 Players / Pass Sheet',
+              ],
+              [
+                'Physics Paper Ball',
+                'Crumpled Paper Toss',
+                'Aim your flick shot into the recycling bin across the room. Wind from the open window changes the trajectory.',
+                'Prototype',
+                'Physics Engine / High Score',
+              ],
+            ].map(([title, kicker, copy, badge, footer], idx) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.1, ease: 'easeOut' as const }}
+                style={{ height: '100%' }}
+              >
+                <Interactive3DBox
+                  className="draft-card ink-border shadow-note"
+                  maxTilt={10}
+                  depth={20}
+                  style={{ height: '100%' }}
+                >
+                  <span className="draft-badge typewriter">{badge}</span>
+                  <h3 className="handwritten">{title}</h3>
+                  <p className="typewriter draft-kicker">{kicker}</p>
+                  <p>{copy}</p>
+                  <div className="typewriter draft-footer">
+                    <Lock aria-hidden="true" /> {footer}
+                  </div>
+                </Interactive3DBox>
+              </motion.div>
             ))}
           </div>
         </section>
@@ -1598,21 +1791,33 @@ function BookCard({
   kicker: string;
 }) {
   return (
-    <article className={`reading-card ink-border shadow-note${cover === 'black-cover' ? ' black-beauty-card' : ''}`}>
+    <Interactive3DBox
+      className={`reading-card ink-border shadow-note${cover === 'black-cover' ? ' black-beauty-card' : ''}`}
+      maxTilt={12}
+      depth={24}
+    >
       <p className="typewriter reading-kicker">{kicker}</p>
-      <div className="book-details">
-        <div className={`book-cover ${cover}`}>
+      <div className="book-details" style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}>
+        <motion.div
+          className={`book-cover ${cover}`}
+          whileHover={{ scale: 1.08, rotate: -2 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+        >
           <img src={coverSrc} alt={`Cover of ${title}`} />
-        </div>
+        </motion.div>
         <div className="book-info">
           <h3 className="handwritten">{title}</h3>
           <p className="typewriter">by {author}</p>
-          <div className="progress-bar"><span style={{ width: `${progress}%` }} /></div>
+          <div className="progress-bar">
+            <span style={{ width: `${progress}%` }} />
+          </div>
           <small className="typewriter">{progressLabel}</small>
         </div>
       </div>
-      <div className="book-note handwritten">{note}</div>
-    </article>
+      <div className="book-note handwritten" style={{ transform: 'translateZ(22px)' }}>
+        {note}
+      </div>
+    </Interactive3DBox>
   );
 }
 
@@ -1620,6 +1825,23 @@ function BookshelfPage() {
   const [running, setRunning] = useState(false);
   const [seconds, setSeconds] = useState(15 * 60);
   const bookCoverBase = `${import.meta.env.BASE_URL}images/`;
+
+  const heroContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    },
+  };
+
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' as const },
+    },
+  };
 
   useEffect(() => {
     if (!running) return;
@@ -1640,12 +1862,44 @@ function BookshelfPage() {
   return (
     <SiteFrame page="bookshelf">
       <div className="bookshelf-content">
-        <header className="bookshelf-intro">
-          <div>
-            <p className="eyebrow typewriter">• Page 38 • Study Hall Reading Nook</p>
-            <h1 className="page-title handwritten bookshelf-title"><Star aria-hidden="true" /> Books I&apos;m Reading &amp; Studying <PenTool aria-hidden="true" /></h1>
+        <motion.header
+          className="bookshelf-intro home-hero"
+          variants={heroContainerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ gridTemplateColumns: 'minmax(0, 1fr) 280px', minHeight: 'auto', paddingTop: 0 }}
+        >
+          <ThreeBackgroundScene />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
+              • Page 38 • Study Hall Reading Nook
+            </motion.p>
+            <h1 className="page-title handwritten bookshelf-title" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              {["Books", "I'm", 'Reading', '&', 'Studying'].map((word, i) => (
+                <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
+                  <motion.span
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: '120%', opacity: 0, rotate: i % 2 === 0 ? 3 : -3 }}
+                    animate={{ y: '0%', opacity: 1, rotate: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 + i * 0.08, ease: 'easeOut' as const }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+              <motion.span
+                animate={{ rotate: [0, 15, -15, 0] }}
+                transition={{ repeat: Infinity, repeatDelay: 5, duration: 1.2 }}
+                style={{ display: 'inline-flex' }}
+              >
+                <BookOpen aria-hidden="true" />
+              </motion.span>
+            </h1>
+            <motion.p className="hero-description" variants={heroItemVariants} style={{ margin: '12px 0 0' }}>
+              Curated readings on cognitive psychology, typography, interaction systems, and stories that spark imagination.
+            </motion.p>
           </div>
-          <div className="desk-stats dashed-ink typewriter">
+          <Interactive3DBox className="desk-stats dashed-ink typewriter" maxTilt={8} depth={16}>
             <strong>Desk Stats // 2024</strong>
             <ul>
               <li>Total Books Read: 14 vols</li>
@@ -1654,8 +1908,8 @@ function BookshelfPage() {
               <li>Bookmarks In Play: 12 dog-eared</li>
             </ul>
             <span>Updated: Oct 28 • Status: On Track</span>
-          </div>
-        </header>
+          </Interactive3DBox>
+        </motion.header>
 
         <section className="bookshelf-section">
           <div className="black-label typewriter">Section 01 • Currently Open On My Desk</div>
@@ -1686,38 +1940,73 @@ function BookshelfPage() {
         <section className="bookshelf-section">
           <div className="black-label typewriter">Section 02 • Recently Finished &amp; Study Notes</div>
           <div className="finished-grid">
-            {finishedBooks.map(([title, copy, meta]) => (
-              <article className="finished-card ink-border shadow-note" key={title}>
-                <div className="stars" aria-label="5 stars">{Array.from({ length: 5 }, (_, index) => <Star key={index} />)}</div>
-                <h3 className="handwritten">{title}</h3>
-                <p>{copy}</p>
-                <span className="typewriter">{meta}</span>
-              </article>
+            {finishedBooks.map(([title, copy, meta], idx) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: idx * 0.08, ease: 'easeOut' as const }}
+                style={{ height: '100%' }}
+              >
+                <Interactive3DBox
+                  className="finished-card ink-border shadow-note"
+                  maxTilt={10}
+                  depth={20}
+                  style={{ height: '100%' }}
+                >
+                  <div className="stars" aria-label="5 stars">
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <Star key={index} />
+                    ))}
+                  </div>
+                  <h3 className="handwritten">{title}</h3>
+                  <p>{copy}</p>
+                  <span className="typewriter">{meta}</span>
+                </Interactive3DBox>
+              </motion.div>
             ))}
           </div>
         </section>
 
         <section className="shelf-tools">
-          <div className="to-read ink-border shadow-note">
-            <div className="typewriter tools-kicker"><BookOpen aria-hidden="true" /> Shelf • The To-Read Stack (Drafting Shelf)</div>
+          <Interactive3DBox className="to-read ink-border shadow-note" maxTilt={8} depth={16}>
+            <div className="typewriter tools-kicker">
+              <BookOpen aria-hidden="true" /> Shelf • The To-Read Stack (Drafting Shelf)
+            </div>
             <ul>
-              {['Diary of a Wimpy Kid', 'Sprint', 'The Shape of Design', 'Gödel, Escher, Bach', 'Invisible Cities'].map((book) => (
-                <li className="handwritten" key={book}><input type="checkbox" /> {book}</li>
-              ))}
+              {['Diary of a Wimpy Kid', 'Sprint', 'The Shape of Design', 'Gödel, Escher, Bach', 'Invisible Cities'].map(
+                (book) => (
+                  <li className="handwritten" key={book}>
+                    <input type="checkbox" /> {book}
+                  </li>
+                )
+              )}
             </ul>
-          </div>
-          <div className="study-tools">
-            <div className="sprint-card ink-border shadow-note">
-              <div className="typewriter tools-kicker"><Timer aria-hidden="true" /> Study Sprint</div>
+          </Interactive3DBox>
+          <div className="study-tools" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <Interactive3DBox className="sprint-card ink-border shadow-note" maxTilt={10} depth={18}>
+              <div className="typewriter tools-kicker">
+                <Timer aria-hidden="true" /> Study Sprint
+              </div>
               <div className="timer handwritten">{timerLabel}</div>
               <p className="typewriter">Study Hall Countdown</p>
-              <button type="button" onClick={() => setRunning((value) => !value)}><Play aria-hidden="true" /> {running ? 'Pause Pencil Sprint' : 'Start Pencil Sprint'}</button>
-            </div>
-            <div className="quote-card shadow-note">
+              <motion.button
+                type="button"
+                onClick={() => setRunning((value) => !value)}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.94 }}
+              >
+                <Play aria-hidden="true" /> {running ? 'Pause Pencil Sprint' : 'Start Pencil Sprint'}
+              </motion.button>
+            </Interactive3DBox>
+            <Interactive3DBox className="quote-card shadow-note" maxTilt={8} depth={16}>
               <Quote aria-hidden="true" />
-              <p className="handwritten">“It is our choices, Harry, that show what we truly are, far more than our abilities.”</p>
+              <p className="handwritten">
+                “It is our choices, Harry, that show what we truly are, far more than our abilities.”
+              </p>
               <span className="typewriter">— Albus Dumbledore</span>
-            </div>
+            </Interactive3DBox>
           </div>
         </section>
 
@@ -1736,7 +2025,7 @@ function FormalFoundations() {
       <div className="section-label typewriter">Section A // Formal Foundations</div>
       <div className="foundations-grid">
         <div className="foundation-list">
-          <div className="current-school ink-border shadow-note">
+          <Interactive3DBox className="current-school ink-border shadow-note" maxTilt={8} depth={18}>
             <div className="card-heading">
               <h3 className="card-title handwritten">Canadian Maple International School</h3>
               <span className="small-label cambridge typewriter">Cambridge Curriculum</span>
@@ -1747,32 +2036,42 @@ function FormalFoundations() {
               <span className="small-label status-blue ink-border">Grade 5</span>
               <span className="small-label status-peach ink-border">Advanced Standing / Honors</span>
             </div>
-          </div>
+          </Interactive3DBox>
           <div>
-            <p className="previous-title typewriter">Previous Foundations</p>
+            <p className="previous-title typewriter" style={{ margin: '14px 0 8px' }}>Previous Foundations</p>
             <div className="previous-grid">
               {[
                 ['Playpen School', 'Local Foundation', 'Early Years'],
                 ['Al-Hidayah', 'Islamic Studies', 'Primary'],
                 ['CIDER', 'Inclusive Ed.', 'Bridge Program'],
                 ['Bangladesh Elementary', 'National Curriculum', 'Grades 1-4'],
-              ].map(([name, kind, stage]) => (
-                <div className="previous-card ink-border shadow-note" key={name}>
-                  <h4 className="handwritten">{name}</h4>
-                  <p className="typewriter">{kind}</p>
-                  <p className="typewriter">{stage}</p>
-                </div>
+              ].map(([name, kind, stage], idx) => (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: idx * 0.06 }}
+                >
+                  <Interactive3DBox className="previous-card ink-border shadow-note" maxTilt={10} depth={16}>
+                    <h4 className="handwritten">{name}</h4>
+                    <p className="typewriter">{kind}</p>
+                    <p className="typewriter">{stage}</p>
+                  </Interactive3DBox>
+                </motion.div>
               ))}
             </div>
           </div>
         </div>
-        <aside className="milestone ink-border shadow-note">
+        <Interactive3DBox className="milestone ink-border shadow-note" maxTilt={8} depth={18}>
           <p className="milestone-kicker typewriter">Milestone • Secondary Target</p>
           <h3 className="handwritten">Approaching O-Levels</h3>
           <p className="milestone-target typewriter">Target: Cambridge IGCSE / O-Levels</p>
-          <p className="milestone-copy">Started with HTML on a borrowed laptop, then Pascal, then C — each one felt like a secret handshake with the machine. The graph paper and physics notebooks came right after.</p>
+          <p className="milestone-copy">
+            Started with HTML on a borrowed laptop, then Pascal, then C — each one felt like a secret handshake with the machine. The graph paper and physics notebooks came right after.
+          </p>
           <div className="milestone-note handwritten">&quot;Pencils, graph papers, and physics notebooks.&quot;</div>
-        </aside>
+        </Interactive3DBox>
       </div>
     </section>
   );
@@ -1786,25 +2085,49 @@ function Specializations() {
     tags: string[];
     source: string;
   }> = [
-    { title: 'Cool Bababoey UI/UX Design', status: 'Completed & Certified Pro', copy: 'Hundreds of hours sketching wireframes, breaking grids, and rebuilding them until the affordances felt obvious. The certificate is just paper; the muscle memory is the real diploma.', tags: ['rectangle pusher', 'figma auto-layout sorcery', 'vibes & affordances', 'certified pixel perfectionist'], source: 'Curated through: Refactoring UI, Nielsen Norman, 3am Reddit rabbit holes • Self-Guided' },
-    { title: 'Ilm Enslavement', status: 'Ongoing', copy: 'AI-assisted coding adventures — where the GPU fan screams, the model apologizes, and the div still won’t center. A loving, slightly unhinged partnership with the machine.', tags: ['gpu fan screaming', 'emotional manipulation (prompts)', 'apology accepted now fix the div', 'vibe coder supreme', 'jailbreak engineer'], source: 'Source: ChatGPT apology logs, 4am stackoverflow hallucinations • Ongoing' },
+    {
+      title: 'Cool Bababoey UI/UX Design',
+      status: 'Completed & Certified Pro',
+      copy: 'Hundreds of hours sketching wireframes, breaking grids, and rebuilding them until the affordances felt obvious. The certificate is just paper; the muscle memory is the real diploma.',
+      tags: ['rectangle pusher', 'figma auto-layout sorcery', 'vibes & affordances', 'certified pixel perfectionist'],
+      source: 'Curated through: Refactoring UI, Nielsen Norman, 3am Reddit rabbit holes • Self-Guided',
+    },
+    {
+      title: 'Ilm Enslavement',
+      status: 'Ongoing',
+      copy: 'AI-assisted coding adventures — where the GPU fan screams, the model apologizes, and the div still won’t center. A loving, slightly unhinged partnership with the machine.',
+      tags: ['gpu fan screaming', 'emotional manipulation (prompts)', 'apology accepted now fix the div', 'vibe coder supreme', 'jailbreak engineer'],
+      source: 'Source: ChatGPT apology logs, 4am stackoverflow hallucinations • Ongoing',
+    },
   ];
   return (
     <section className="specializations">
       <div className="section-label typewriter">Section B // Self-Taught Curriculum &amp; Specializations</div>
       <div className="specialization-grid">
-        {cards.map(({ title, status, copy, tags, source }) => (
-          <div className="specialization-card ink-border shadow-note" key={title}>
-            <div className="card-heading">
-              <h3 className="card-title handwritten">{title}</h3>
-              <span className="small-label status-certified ink-border typewriter">{status}</span>
-            </div>
-            <p className="specialization-copy">{copy}</p>
-            <div className="skill-row">
-              {tags.map((tag) => <span className="skill typewriter" key={tag}>{tag}</span>)}
-            </div>
-            <div className="source-line typewriter">{source}</div>
-          </div>
+        {cards.map(({ title, status, copy, tags, source }, idx) => (
+          <motion.div
+            key={title}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.45, delay: idx * 0.1 }}
+          >
+            <Interactive3DBox className="specialization-card ink-border shadow-note" maxTilt={8} depth={18}>
+              <div className="card-heading">
+                <h3 className="card-title handwritten">{title}</h3>
+                <span className="small-label status-certified ink-border typewriter">{status}</span>
+              </div>
+              <p className="specialization-copy">{copy}</p>
+              <div className="skill-row">
+                {tags.map((tag) => (
+                  <span className="skill typewriter" key={tag}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div className="source-line typewriter">{source}</div>
+            </Interactive3DBox>
+          </motion.div>
         ))}
       </div>
     </section>
@@ -1812,29 +2135,88 @@ function Specializations() {
 }
 
 function EducationPage() {
+  const heroContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    },
+  };
+
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' as const },
+    },
+  };
+
   return (
     <SiteFrame page="education">
       <div className="page-content">
-        <header className="intro">
-          <div>
-            <p className="eyebrow typewriter">Log Entry No. 04 • Academic &amp; Self-Directed</p>
-            <h1 className="intro-title handwritten"><GraduationCap aria-hidden="true" /><span>Education &amp; Learning Log</span></h1>
-            <p className="intro-copy">honestly, nothing beats an obsession with curiosity — chasing the next thing that makes the brain itch until it&apos;s scratched.</p>
+        <motion.header
+          className="intro home-hero"
+          variants={heroContainerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', minHeight: 'auto', paddingTop: 0 }}
+        >
+          <ThreeBackgroundScene />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
+              • Page 04 • Academic &amp; Self-Directed
+            </motion.p>
+            <h1 className="intro-title handwritten" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              {['Education', '&', 'Learning', 'Log'].map((word, i) => (
+                <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
+                  <motion.span
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: '120%', opacity: 0, rotate: i % 2 === 0 ? 3 : -3 }}
+                    animate={{ y: '0%', opacity: 1, rotate: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 + i * 0.08, ease: 'easeOut' as const }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+              <motion.span
+                animate={{ rotate: [0, 12, -12, 0] }}
+                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1.2 }}
+                style={{ display: 'inline-flex' }}
+              >
+                <GraduationCap aria-hidden="true" />
+              </motion.span>
+            </h1>
+            <motion.p className="intro-copy" variants={heroItemVariants}>
+              honestly, nothing beats an obsession with curiosity — chasing the next thing that makes the brain itch until it&apos;s scratched.
+            </motion.p>
           </div>
-          <div className="intro-tags typewriter">
-            <span className="tag tag-yellow ink-border">Major Path: CS &amp; Interaction</span>
-            <span className="tag tag-peach ink-border">Focus: Interactive Systems</span>
-            <span className="tag tag-green ink-border">Self-Taught: Countless hrs</span>
+          <div className="intro-tags typewriter" style={{ position: 'relative', zIndex: 1 }}>
+            <motion.span className="tag tag-yellow ink-border" whileHover={{ scale: 1.05 }}>
+              Major Path: CS &amp; Interaction
+            </motion.span>
+            <motion.span className="tag tag-peach ink-border" whileHover={{ scale: 1.05 }}>
+              Focus: Interactive Systems
+            </motion.span>
+            <motion.span className="tag tag-green ink-border" whileHover={{ scale: 1.05 }}>
+              Self-Taught: Countless hrs
+            </motion.span>
           </div>
-        </header>
+        </motion.header>
         <FormalFoundations />
         <Specializations />
-        <div className="always-learning ink-border shadow-note">
-          <div className="learning-heading typewriter"><Pencil aria-hidden="true" /><span>Always Learning</span></div>
-          <p className="learning-quote handwritten">&quot;Always learning, sketching, and breaking production to see how it works.&quot;</p>
+        <Interactive3DBox className="always-learning ink-border shadow-note" maxTilt={6} depth={16}>
+          <div className="learning-heading typewriter">
+            <Pencil aria-hidden="true" />
+            <span>Always Learning</span>
+          </div>
+          <p className="learning-quote handwritten">
+            &quot;Always learning, sketching, and breaking production to see how it works.&quot;
+          </p>
           <p className="learning-detail typewriter">Currently reading: Meme design papers &amp; WebGL shaders at 3am.</p>
           <p className="learning-signature handwritten">— Tanshir Al Musnad (TAM)</p>
-        </div>
+        </Interactive3DBox>
       </div>
     </SiteFrame>
   );

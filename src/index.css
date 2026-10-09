@@ -2720,7 +2720,20 @@ html.lenis, html.lenis body {
 }
 
 /* 3D Card Enhancements & Perspective */
-.project-grid {
+.project-grid,
+.toolkit-grid,
+.reading-grid,
+.finished-grid,
+.draft-grid,
+.foundations-grid,
+.previous-grid,
+.specialization-grid,
+.games-layout,
+.home-stats,
+.shelf-tools,
+.page-intro,
+.bookshelf-intro,
+.intro {
   perspective: 1200px;
 }
 
@@ -2730,6 +2743,11 @@ html.lenis, html.lenis body {
   transform-style: preserve-3d;
   transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+}
+
+.contact-card-wrap {
+  width: 100%;
+  max-width: 672px;
 }
 
 .card-3d:hover {
