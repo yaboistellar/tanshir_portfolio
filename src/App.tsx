@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 import {
   ArrowDown,
   ArrowRight,
   Award,
   BookOpen,
   Brush,
+  ChevronDown,
   Coffee,
   Cpu,
   Eraser,
@@ -221,6 +222,7 @@ function SiteFrame({
 
   return (
     <div className={`notebook-page ${className}`} onClick={handlePageClick}>
+      <ScrollProgressBar />
       {stamps.map((stamp) => (
         <span
           key={stamp.id}
@@ -239,6 +241,74 @@ function SiteFrame({
       <main className="site-width page-main">{children}</main>
       <SiteFooter />
     </div>
+  );
+}
+
+function ScrollProgressBar() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 180, damping: 28, restDelta: 0.001 });
+
+  return (
+    <motion.div
+      className="scroll-progress-bar"
+      style={{ scaleX, transformOrigin: '0%' }}
+      aria-hidden="true"
+    />
+  );
+}
+
+function ScrollDownIndicator({ targetId = 'projects' }: { targetId?: string }) {
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, [0, 180], [1, 0]);
+  const y = useTransform(scrollY, [0, 180], [0, 16]);
+
+  const scrollToTarget = () => {
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <motion.div
+      className="scroll-down-container typewriter"
+      style={{ opacity, y }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.8, duration: 0.6, ease: 'easeOut' as const }}
+    >
+      <button
+        type="button"
+        className="scroll-down-button"
+        onClick={scrollToTarget}
+        aria-label="Scroll down to projects"
+      >
+        <div className="mouse-indicator">
+          <motion.span
+            className="mouse-wheel-dot"
+            animate={{
+              y: [0, 12, 0],
+              opacity: [1, 0.25, 1],
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 1.8,
+              ease: 'easeInOut',
+            }}
+          />
+        </div>
+        <div className="scroll-text-group">
+          <span className="scroll-label">SCROLL DOWN</span>
+          <motion.div
+            className="scroll-chevrons"
+            animate={{ y: [0, 4, 0] }}
+            transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+          >
+            <ChevronDown aria-hidden="true" />
+          </motion.div>
+        </div>
+      </button>
+    </motion.div>
   );
 }
 
@@ -469,6 +539,7 @@ function HomePage() {
               <span className="typewriter">by J.K. Rowling • Ch. 4 (Notes taken)</span>
             </motion.div>
           </motion.div>
+          <ScrollDownIndicator targetId="projects" />
         </motion.section>
 
         <motion.section

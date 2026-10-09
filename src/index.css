@@ -2497,3 +2497,91 @@ a:focus-visible {
 .filter-chip.selected {
   transform: translateY(-1px);
 }
+
+/* Smooth Scroll Progress Bar */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--note-ink);
+  z-index: 999;
+}
+
+/* Scroll Down Indicator Component */
+.scroll-down-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 18px;
+  grid-column: 1 / -1;
+}
+
+.scroll-down-button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--note-ink);
+  padding: 6px 16px;
+  border-radius: 4px;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.scroll-down-button:hover {
+  transform: translateY(3px);
+}
+
+.mouse-indicator {
+  position: relative;
+  width: 22px;
+  height: 36px;
+  border: 2px solid var(--note-ink);
+  border-radius: 12px;
+  background: var(--note-surface);
+  box-shadow: 2px 2px 0 rgb(26 26 26 / 12%);
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+}
+
+.mouse-wheel-dot {
+  width: 4px;
+  height: 8px;
+  background: var(--note-ink);
+  border-radius: 999px;
+  display: block;
+}
+
+.scroll-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.scroll-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--note-ink);
+  opacity: 0.75;
+}
+
+.scroll-chevrons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scroll-chevrons svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  opacity: 0.8;
+}
