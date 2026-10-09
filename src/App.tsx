@@ -399,70 +399,172 @@ function ScrollDownIndicator({ targetId = 'projects' }: { targetId?: string }) {
   );
 }
 
-function ThreeDeskScene() {
+function ThreeBackgroundScene() {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
-    const width = container.clientWidth || 180;
-    const height = container.clientHeight || 150;
+    let width = container.clientWidth || window.innerWidth;
+    let height = container.clientHeight || 750;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 4.8;
+    camera.position.set(0, 0, 8.5);
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // 3D Wireframe Icosahedron (Sketchbook Geometric Ink Model)
-    const geom1 = new THREE.IcosahedronGeometry(1.25, 0);
-    const wireMat1 = new THREE.MeshBasicMaterial({
+    // Group for real-time parallax tilt
+    const worldGroup = new THREE.Group();
+    scene.add(worldGroup);
+
+    // 1. Central Massive Drafting Desk Geometric Polyhedron (Icosahedron)
+    const outerGeom = new THREE.IcosahedronGeometry(2.6, 0);
+    const outerMat = new THREE.MeshBasicMaterial({
       color: 0x252621,
       wireframe: true,
+      transparent: true,
+      opacity: 0.28,
     });
-    const mesh1 = new THREE.Mesh(geom1, wireMat1);
-    scene.add(mesh1);
+    const outerMesh = new THREE.Mesh(outerGeom, outerMat);
+    worldGroup.add(outerMesh);
 
-    // Inner glowing paper/ink core
-    const geomCore = new THREE.OctahedronGeometry(0.65, 0);
-    const coreMat = new THREE.MeshBasicMaterial({
+    // 2. Secondary Nested Dodecahedron in Crimson Ink
+    const midGeom = new THREE.DodecahedronGeometry(1.95, 0);
+    const midMat = new THREE.MeshBasicMaterial({
       color: 0xb43b35,
       wireframe: true,
+      transparent: true,
+      opacity: 0.35,
     });
-    const meshCore = new THREE.Mesh(geomCore, coreMat);
-    scene.add(meshCore);
+    const midMesh = new THREE.Mesh(midGeom, midMat);
+    worldGroup.add(midMesh);
 
-    // Floating 3D Ink Stars
-    const starGeom = new THREE.TetrahedronGeometry(0.18, 0);
-    const starMat = new THREE.MeshBasicMaterial({ color: 0x252621, wireframe: true });
-    const stars: THREE.Mesh[] = [];
-    for (let i = 0; i < 5; i++) {
-      const star = new THREE.Mesh(starGeom, starMat);
-      const angle = (i / 5) * Math.PI * 2;
-      const radius = 1.9;
-      star.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.7, (Math.random() - 0.5) * 1.2);
-      scene.add(star);
-      stars.push(star);
+    // 3. Inner Fast-spinning Octahedron Core
+    const coreGeom = new THREE.OctahedronGeometry(1.15, 0);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: 0x252621,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.45,
+    });
+    const coreMesh = new THREE.Mesh(coreGeom, coreMat);
+    worldGroup.add(coreMesh);
+
+    // 4. Orbiting Celestial/Drafting Astrolabe Rings
+    const ringGeom1 = new THREE.TorusGeometry(3.8, 0.015, 12, 80);
+    const ringMat1 = new THREE.MeshBasicMaterial({
+      color: 0x252621,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.22,
+    });
+    const ringMesh1 = new THREE.Mesh(ringGeom1, ringMat1);
+    ringMesh1.rotation.x = Math.PI / 3.5;
+    ringMesh1.rotation.y = Math.PI / 5;
+    worldGroup.add(ringMesh1);
+
+    const ringGeom2 = new THREE.TorusGeometry(4.4, 0.015, 12, 80);
+    const ringMat2 = new THREE.MeshBasicMaterial({
+      color: 0xb43b35,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.2,
+    });
+    const ringMesh2 = new THREE.Mesh(ringGeom2, ringMat2);
+    ringMesh2.rotation.x = -Math.PI / 4;
+    ringMesh2.rotation.z = Math.PI / 6;
+    worldGroup.add(ringMesh2);
+
+    // 5. Desk Blueprint Grid Helper
+    const gridHelper = new THREE.GridHelper(18, 22, 0xb43b35, 0x252621);
+    (gridHelper.material as THREE.Material).transparent = true;
+    (gridHelper.material as THREE.Material).opacity = 0.09;
+    gridHelper.position.y = -3.4;
+    gridHelper.rotation.x = 0.25;
+    worldGroup.add(gridHelper);
+
+    // 6. Floating Scattered Ink Polyhedra across the page
+    interface FloatingShape {
+      mesh: THREE.Mesh;
+      rotSpeed: { x: number; y: number; z: number };
+      floatSpeed: number;
+      floatOffset: number;
+      basePos: THREE.Vector3;
     }
+
+    const floatingShapes: FloatingShape[] = [];
+    const shapeGeometries = [
+      new THREE.TetrahedronGeometry(0.38, 0),
+      new THREE.OctahedronGeometry(0.4, 0),
+      new THREE.BoxGeometry(0.45, 0.45, 0.45),
+      new THREE.IcosahedronGeometry(0.34, 0),
+    ];
+
+    const inkMaterials = [
+      new THREE.MeshBasicMaterial({ color: 0x252621, wireframe: true, transparent: true, opacity: 0.25 }),
+      new THREE.MeshBasicMaterial({ color: 0xb43b35, wireframe: true, transparent: true, opacity: 0.28 }),
+      new THREE.MeshBasicMaterial({ color: 0x67685f, wireframe: true, transparent: true, opacity: 0.22 }),
+    ];
+
+    const positions = [
+      [-4.8, 2.4, -1.5],
+      [5.0, 2.0, -1.0],
+      [-5.5, -1.8, -0.8],
+      [5.6, -2.4, -1.2],
+      [-3.0, 3.4, 0.5],
+      [3.4, 3.6, -0.5],
+      [-3.8, -3.4, 0.2],
+      [4.0, -3.2, 0.4],
+      [-6.2, 0.2, -2.0],
+      [6.4, 0.5, -1.8],
+      [-1.8, -3.0, 1.0],
+      [2.2, 3.0, 0.8],
+      [-5.2, 4.0, -2.5],
+      [5.4, -4.0, -2.0],
+    ];
+
+    positions.forEach((pos, idx) => {
+      const geom = shapeGeometries[idx % shapeGeometries.length];
+      const mat = inkMaterials[idx % inkMaterials.length];
+      const mesh = new THREE.Mesh(geom, mat);
+      const basePos = new THREE.Vector3(pos[0], pos[1], pos[2]);
+      mesh.position.copy(basePos);
+      worldGroup.add(mesh);
+
+      floatingShapes.push({
+        mesh,
+        rotSpeed: {
+          x: (Math.random() - 0.5) * 0.02,
+          y: (Math.random() - 0.5) * 0.02,
+          z: (Math.random() - 0.5) * 0.02,
+        },
+        floatSpeed: 1 + Math.random() * 1.5,
+        floatOffset: Math.random() * Math.PI * 2,
+        basePos,
+      });
+    });
 
     let mouseX = 0;
     let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
+    let smoothMouseX = 0;
+    let smoothMouseY = 0;
 
     const onMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = e.clientX - rect.left - width / 2;
-      const y = e.clientY - rect.top - height / 2;
-      mouseX = (x / width) * 2;
-      mouseY = -(y / height) * 2;
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = -(e.clientY / window.innerHeight - 0.5) * 2;
     };
 
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
 
     let animationFrameId: number;
     const clock = new THREE.Clock();
@@ -472,20 +574,38 @@ function ThreeDeskScene() {
       const delta = clock.getDelta();
       const elapsed = clock.getElapsedTime();
 
-      targetX += (mouseX - targetX) * 0.06;
-      targetY += (mouseY - targetY) * 0.06;
+      // Smooth mouse damping
+      smoothMouseX += (mouseX - smoothMouseX) * 0.04;
+      smoothMouseY += (mouseY - smoothMouseY) * 0.04;
 
-      mesh1.rotation.x = elapsed * 0.4 + targetY * 1.5;
-      mesh1.rotation.y = elapsed * 0.5 + targetX * 1.5;
-      mesh1.position.y = Math.sin(elapsed * 1.6) * 0.1;
+      // Rotate central geometric models
+      outerMesh.rotation.x = elapsed * 0.18 + smoothMouseY * 0.6;
+      outerMesh.rotation.y = elapsed * 0.22 + smoothMouseX * 0.6;
+      outerMesh.position.y = Math.sin(elapsed * 1.2) * 0.12;
 
-      meshCore.rotation.x = -elapsed * 0.6;
-      meshCore.rotation.y = -elapsed * 0.7;
+      midMesh.rotation.x = -elapsed * 0.24 - smoothMouseY * 0.4;
+      midMesh.rotation.y = -elapsed * 0.28 + smoothMouseX * 0.4;
+      midMesh.position.y = Math.cos(elapsed * 1.4) * 0.08;
 
-      stars.forEach((star, idx) => {
-        star.rotation.x += delta * (idx % 2 === 0 ? 1.2 : -1.2);
-        star.rotation.y += delta * 1.6;
-        star.position.y += Math.sin(elapsed * 2.2 + idx) * 0.003;
+      coreMesh.rotation.x = elapsed * 0.45;
+      coreMesh.rotation.z = elapsed * 0.4;
+
+      ringMesh1.rotation.z = elapsed * 0.12 + smoothMouseX * 0.3;
+      ringMesh2.rotation.y = -elapsed * 0.14 - smoothMouseY * 0.3;
+
+      // Parallax world tilt & pan
+      worldGroup.rotation.y = smoothMouseX * 0.25;
+      worldGroup.rotation.x = -smoothMouseY * 0.18;
+      worldGroup.position.x = smoothMouseX * 0.35;
+      worldGroup.position.y = smoothMouseY * 0.25;
+
+      // Animate floating geometric solids
+      floatingShapes.forEach((shape) => {
+        shape.mesh.rotation.x += shape.rotSpeed.x;
+        shape.mesh.rotation.y += shape.rotSpeed.y;
+        shape.mesh.rotation.z += shape.rotSpeed.z;
+        shape.mesh.position.y =
+          shape.basePos.y + Math.sin(elapsed * shape.floatSpeed + shape.floatOffset) * 0.2;
       });
 
       renderer.render(scene, camera);
@@ -495,12 +615,12 @@ function ThreeDeskScene() {
 
     const handleResize = () => {
       if (!container) return;
-      const newW = container.clientWidth;
-      const newH = container.clientHeight;
-      if (newW === 0 || newH === 0) return;
-      camera.aspect = newW / newH;
+      width = container.clientWidth;
+      height = container.clientHeight;
+      if (width === 0 || height === 0) return;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(newW, newH);
+      renderer.setSize(width, height);
     };
 
     window.addEventListener('resize', handleResize);
@@ -512,9 +632,13 @@ function ThreeDeskScene() {
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
-      geom1.dispose();
-      geomCore.dispose();
-      starGeom.dispose();
+      outerGeom.dispose();
+      midGeom.dispose();
+      coreGeom.dispose();
+      ringGeom1.dispose();
+      ringGeom2.dispose();
+      gridHelper.dispose();
+      shapeGeometries.forEach((g) => g.dispose());
       renderer.dispose();
     };
   }, []);
@@ -522,13 +646,8 @@ function ThreeDeskScene() {
   return (
     <div
       ref={mountRef}
-      style={{
-        width: '100%',
-        height: '140px',
-        display: 'grid',
-        placeItems: 'center',
-        cursor: 'grab',
-      }}
+      className="three-hero-bg"
+      aria-hidden="true"
     />
   );
 }
@@ -779,6 +898,7 @@ function HomePage() {
           animate="visible"
           style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}
         >
+          <ThreeBackgroundScene />
           <motion.div
             className="portrait-frame ink-border shadow-note"
             variants={heroItemVariants}
@@ -874,20 +994,6 @@ function HomePage() {
           </div>
           <motion.div className="home-stats" variants={heroItemVariants} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
             <motion.div
-              className="three-desk-wrapper ink-border"
-              whileHover={{ y: -4, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              <div className="typewriter note-kicker" style={{ width: '100%', justifyContent: 'space-between' }}>
-                <span><Sparkles aria-hidden="true" /> 3D Geometric Desk Model</span>
-                <span style={{ fontSize: '9px', opacity: 0.6 }}>Interactive WebGL</span>
-              </div>
-              <ThreeDeskScene />
-              <div className="typewriter" style={{ fontSize: '10px', color: 'var(--note-muted)', textAlign: 'center' }}>
-                hover / move mouse to rotate in 3D
-              </div>
-            </motion.div>
-            <motion.div
               className="note-card cream-note"
               whileHover={{ y: -4, rotate: -0.8 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -912,6 +1018,24 @@ function HomePage() {
               </div>
               <p className="handwritten">Harry Potter</p>
               <span className="typewriter">by J.K. Rowling • Ch. 4 (Notes taken)</span>
+            </motion.div>
+            <motion.div
+              className="note-card yellow-note"
+              whileHover={{ y: -4, rotate: -1.2 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <div className="typewriter note-kicker">
+                <motion.span
+                  animate={{ rotate: [0, 15, -15, 0] }}
+                  transition={{ repeat: Infinity, repeatDelay: 3, duration: 1.2 }}
+                  style={{ display: 'inline-flex' }}
+                >
+                  <Sparkles aria-hidden="true" />
+                </motion.span>{' '}
+                3D Geometric Space
+              </div>
+              <p className="handwritten">Live WebGL geometric desk universe covering the page</p>
+              <span className="typewriter" style={{ fontSize: '10px', opacity: 0.7 }}>Move cursor anywhere to tilt &amp; orbit</span>
             </motion.div>
           </motion.div>
           <ScrollDownIndicator targetId="projects" />

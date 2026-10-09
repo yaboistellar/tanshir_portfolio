@@ -744,11 +744,38 @@ a:focus-visible {
 }
 
 .home-hero {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 28px;
   align-items: start;
   padding-top: 24px;
+}
+
+.three-hero-bg {
+  position: absolute;
+  top: -60px;
+  bottom: -40px;
+  left: -80px;
+  right: -80px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.92;
+}
+
+.three-hero-bg canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.portrait-frame,
+.hero-copy,
+.home-stats,
+.scroll-down-container {
+  position: relative;
+  z-index: 1;
 }
 
 .portrait-frame {
