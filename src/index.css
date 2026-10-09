@@ -1507,6 +1507,565 @@ a:focus-visible {
   text-align: center;
 }
 
+/* ==========================================================================
+   Notebook Arcade Mini-Games & Widgets
+   ========================================================================== */
+
+.game-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.game-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.game-tab-btn:hover {
+  background: var(--note-surface-soft);
+  transform: translateY(-1px);
+}
+
+.game-tab-btn.selected {
+  background: var(--note-ink);
+  color: var(--note-cream);
+  transform: translateY(-2px);
+  box-shadow: 2px 3px 0 var(--note-shadow);
+}
+
+/* Hangman Game */
+.hangman-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hangman-stage {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
+  align-items: center;
+  background: var(--note-cream);
+  border: 2px dashed var(--note-ink);
+  padding: 14px;
+  border-radius: 2px;
+}
+
+@media (max-width: 600px) {
+  .hangman-stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+.hangman-svg {
+  width: 160px;
+  height: 160px;
+}
+
+.hangman-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hangman-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.hangman-slot {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 38px;
+  border-bottom: 3px solid var(--note-ink);
+  font-family: var(--font-hand);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--note-ink);
+}
+
+.hangman-keyboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.hangman-key {
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.hangman-key:hover:not(:disabled) {
+  background: var(--note-yellow);
+  transform: translateY(-1px);
+}
+
+.hangman-key:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.hangman-key.key-correct {
+  background: #22c55e;
+  color: #fff;
+  opacity: 1;
+  border-color: #16a34a;
+}
+
+.hangman-key.key-wrong {
+  background: #ef4444;
+  color: #fff;
+  opacity: 0.6;
+  border-color: #dc2626;
+}
+
+/* Paper Ball Toss Game */
+.paperball-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.paperball-arena {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-cream);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.paperball-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: var(--note-rule);
+  border-top: 2px solid var(--note-ink);
+}
+
+.paperball-bin {
+  position: absolute;
+  bottom: 32px;
+  right: 36px;
+  width: 48px;
+  height: 58px;
+  border: 2px solid var(--note-ink);
+  border-top: none;
+  background: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+  border-radius: 0 0 4px 4px;
+}
+
+.paperball-bin::before {
+  content: 'RECYCLE';
+  font-family: var(--font-mono);
+  font-size: 7px;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.paperball-controls-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  background: var(--note-surface);
+  padding: 12px;
+  border: 1.5px solid var(--note-ink);
+}
+
+.paperball-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.paperball-slider-group label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.paperball-slider-group input[type='range'] {
+  accent-color: var(--note-accent);
+  cursor: pointer;
+}
+
+/* Battleship Game */
+.battleship-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.battleship-grids {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.battleship-grid-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.battleship-grid-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.battleship-grid-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 2px;
+  aspect-ratio: 1;
+  background: var(--note-ink);
+  border: 2px solid var(--note-ink);
+}
+
+.battleship-cell {
+  background: var(--note-cream);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+  min-height: 38px;
+}
+
+.battleship-cell:hover:not(:disabled) {
+  background: rgb(212 225 245 / 50%);
+}
+
+.battleship-cell.cell-hit {
+  background: #fca5a5 !important;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.battleship-cell.cell-miss {
+  background: #e2e8f0 !important;
+  color: #64748b;
+}
+
+.battleship-cell.cell-ship {
+  background: #bfdbfe;
+}
+
+/* Snake Game */
+.snake-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.snake-arena {
+  position: relative;
+  width: min(100%, 300px);
+  aspect-ratio: 1;
+  border: 2px solid var(--note-ink);
+  background: var(--note-cream);
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-template-rows: repeat(14, 1fr);
+  gap: 1px;
+}
+
+.snake-cell {
+  width: 100%;
+  height: 100%;
+}
+
+.snake-cell.snake-head {
+  background: #1d4ed8;
+  border-radius: 2px;
+}
+
+.snake-cell.snake-body {
+  background: #3b82f6;
+  border-radius: 1px;
+}
+
+.snake-cell.snake-food {
+  background: #ef4444;
+  border-radius: 50%;
+  transform: scale(0.8);
+}
+
+.snake-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 40px);
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.snake-dpad button {
+  border: 2px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.snake-dpad button:hover {
+  background: var(--note-surface-soft);
+}
+
+/* Interactive Doodle Pad in Free Space Note */
+.doodle-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border: 1.5px dashed var(--note-ink);
+  background: rgba(255, 255, 255, 0.4);
+  margin-top: 6px;
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.doodle-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.doodle-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.doodle-colors {
+  display: flex;
+  gap: 4px;
+}
+
+.doodle-color-btn {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--note-ink);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease;
+}
+
+.doodle-color-btn.selected {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px var(--note-ink);
+}
+
+.doodle-action-btn {
+  border: 1.5px solid var(--note-ink);
+  background: var(--note-surface);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.doodle-action-btn:hover {
+  background: var(--note-surface-soft);
+}
+
+/* Pencil Sharpener Interactive Widget */
+.sharpener-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-ink);
+  color: var(--note-cream);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  margin-top: 8px;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.sharpener-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.sharpener-btn:active {
+  transform: translateY(1px);
+}
+
+.badge-unlocked-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-top: 4px;
+  border: 1px solid #f59e0b;
+}
+
+/* Play Now Button on Blueprinted Cards */
+.play-draft-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-ink);
+  color: var(--note-cream);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.play-draft-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 3px 0 var(--note-shadow);
+}
+
+/* Dark mode adjustments for game widgets */
+.dark .game-tab-btn {
+  background: var(--note-surface);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .game-tab-btn.selected {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}
+
+.dark .hangman-stage,
+.dark .paperball-arena,
+.dark .battleship-cell,
+.dark .snake-arena {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+  color: var(--note-ink);
+}
+
+.dark .hangman-slot {
+  border-bottom-color: var(--note-ink);
+  color: var(--note-ink);
+}
+
+.dark .hangman-key {
+  background: var(--note-surface-soft);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .paperball-controls-panel {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+}
+
+.dark .paperball-ground {
+  background: var(--note-surface-soft);
+  border-top-color: var(--note-ink);
+}
+
+.dark .battleship-grid-board {
+  background: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .battleship-cell:hover:not(:disabled) {
+  background: rgb(255 255 255 / 15%);
+}
+
+.dark .doodle-canvas-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: var(--note-ink);
+}
+
+.dark .doodle-action-btn,
+.dark .snake-dpad button {
+  background: var(--note-surface-soft);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .sharpener-btn,
+.dark .play-draft-btn {
+  background: var(--note-ink);
+  color: var(--note-cream);
+  border-color: var(--note-ink);
+}
+
+.dark .badge-unlocked-banner {
+  background: #451a03;
+  color: #fde68a;
+  border-color: #d97706;
+}
+
 .game-aside {
   display: flex;
   flex-direction: column;

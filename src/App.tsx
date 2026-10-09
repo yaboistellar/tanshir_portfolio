@@ -8,14 +8,18 @@ import {
   Award,
   BookOpen,
   Brush,
+  Check,
   ChevronDown,
   Coffee,
   Cpu,
   Eraser,
   Facebook,
   FileText,
+  Flame,
+  Gamepad2,
   Github,
   GraduationCap,
+  HelpCircle,
   Hourglass,
   Instagram,
   Linkedin,
@@ -28,13 +32,18 @@ import {
   PenTool,
   Play,
   Quote,
+  RotateCcw,
   Send,
+  Ship,
   Sparkles,
   Star,
   StickyNote,
   Sun,
+  Target,
   Terminal,
   Timer,
+  Trophy,
+  Wind,
 } from 'lucide-react';
 
 type PageKey = 'home' | 'games' | 'bookshelf' | 'education';
@@ -1525,29 +1534,767 @@ function findPaperAiMove(currentBoard: TicTacToeMark[]): number {
   return bestMove;
 }
 
-function GamesPage() {
+function DoodlePadWidget() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [penColor, setPenColor] = useState('#1d4ed8'); // Blue Ballpoint
+  const [penWidth, setPenWidth] = useState(2.5);
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.strokeStyle = penColor;
+    ctx.lineWidth = penWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }, []);
+
+  return (
+    <Interactive3DBox className="game-note yellow-note ink-border shadow-note" maxTilt={8} depth={16}>
+      <div className="typewriter note-kicker">
+        <StickyNote aria-hidden="true" /> Free Space Scribble Pad
+      </div>
+      <p className="handwritten" style={{ fontSize: '18px', marginBottom: '4px' }}>
+        Jot a sketch or math doodle:
+      </p>
+      <div className="doodle-canvas-wrapper">
+        <canvas
+          ref={canvasRef}
+          className="doodle-canvas"
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+        />
+      </div>
+      <div className="doodle-toolbar">
+        <div className="doodle-colors">
+          {[
+            { color: '#1d4ed8', label: 'Blue Pen' },
+            { color: '#dc2626', label: 'Red Pencil' },
+            { color: '#252621', label: 'Graphite' },
+          ].map(({ color, label }) => (
+            <button
+              key={color}
+              type="button"
+              className={`doodle-color-btn${penColor === color ? ' selected' : ''}`}
+              style={{ backgroundColor: color }}
+              onClick={() => {
+                setPenColor(color);
+                setPenWidth(2.5);
+              }}
+              title={label}
+              aria-label={label}
+            />
+          ))}
+        </div>
+        <button type="button" className="doodle-action-btn typewriter" onClick={clearCanvas}>
+          <Eraser aria-hidden="true" style={{ width: 10, height: 10, display: 'inline', marginRight: 2 }} /> Clear
+        </button>
+      </div>
+    </Interactive3DBox>
+  );
+}
+
+function PencilSharpenerWidget() {
+  const [shavings, setShavings] = useState(0);
+  const [isCranking, setIsCranking] = useState(false);
+
+  const sharpenPencil = () => {
+    setIsCranking(true);
+    setShavings((prev) => prev + 1);
+    setTimeout(() => setIsCranking(false), 300);
+  };
+
+  const getBadge = () => {
+    if (shavings >= 50) return '🏆 Master Draftsman';
+    if (shavings >= 25) return '🎖️ Golden Chalk Badge';
+    if (shavings >= 15) return '🥈 Silver Graphite';
+    if (shavings >= 5) return '✏️ Bronze Lead';
+    return null;
+  };
+
+  const activeBadge = getBadge();
+  const progressPercent = Math.min(100, Math.round(((shavings % 25) / 25) * 100));
+
+  return (
+    <Interactive3DBox className="game-note ink-border shadow-note" maxTilt={8} depth={16}>
+      <div className="typewriter note-kicker">
+        <Award aria-hidden="true" /> {shavings} Shavings Collected
+      </div>
+      <div className="shavings-bar">
+        <span style={{ width: `${progressPercent}%`, transition: 'width 0.2s ease' }} />
+      </div>
+      <p className="typewriter" style={{ fontSize: '11px', color: 'var(--note-muted)', margin: '4px 0' }}>
+        Sharpen to unlock study hall stationery badges (25 per tier).
+      </p>
+      {activeBadge && (
+        <div className="badge-unlocked-banner">
+          <Sparkles aria-hidden="true" style={{ width: 12, height: 12 }} /> {activeBadge}
+        </div>
+      )}
+      <motion.button
+        type="button"
+        className="sharpener-btn"
+        onClick={sharpenPencil}
+        animate={isCranking ? { rotate: [0, 180, 360] } : {}}
+        transition={{ duration: 0.3 }}
+      >
+        <RotateCcw aria-hidden="true" style={{ width: 14, height: 14 }} /> Sharpen Pencil
+      </motion.button>
+    </Interactive3DBox>
+  );
+}
+
+const HANGMAN_WORDS = [
+  { word: 'GRAPHITE', hint: 'Core writing mineral inside pencils' },
+  { word: 'BLUEPRINT', hint: 'Architectural schematic drawing' },
+  { word: 'PROTRACTOR', hint: 'Semi-circle tool for measuring angles' },
+  { word: 'SKETCHBOOK', hint: 'Bound notebook where ideas start' },
+  { word: 'ALGEBRA', hint: 'Equations and formulas in period 3' },
+  { word: 'NOTEBOOK', hint: 'Ruled journal for margin scribbles' },
+  { word: 'CALCULATOR', hint: 'Solar-powered number cruncher' },
+  { word: 'GEOMETRY', hint: 'Shapes, polygons, and proofs' },
+  { word: 'DRAFTSMAN', hint: 'Skilled technical illustrator' },
+  { word: 'ORIGAMI', hint: 'The Japanese craft of folding paper' },
+  { word: 'INKWELL', hint: 'Reservoir for dipping fountain pens' },
+];
+
+function HangmanGame() {
+  const [wordIndex, setWordIndex] = useState(0);
+  const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
+  const [score, setScore] = useState({ won: 0, lost: 0 });
+  const [hintUsed, setHintUsed] = useState(false);
+
+  const currentItem = HANGMAN_WORDS[wordIndex % HANGMAN_WORDS.length];
+  const word = currentItem.word;
+  const hint = currentItem.hint;
+
+  const mistakes = Array.from(guessedLetters).filter((letter) => !word.includes(letter)).length;
+  const isWon = word.split('').every((letter) => guessedLetters.has(letter));
+  const isLost = mistakes >= 6;
+  const isOver = isWon || isLost;
+
+  const handleGuess = (letter: string) => {
+    if (isOver || guessedLetters.has(letter)) return;
+    const next = new Set(guessedLetters);
+    next.add(letter);
+    setGuessedLetters(next);
+
+    const nextMistakes = Array.from(next).filter((l) => !word.includes(l)).length;
+    const nextWon = word.split('').every((l) => next.has(l));
+
+    if (nextWon) {
+      setScore((s) => ({ ...s, won: s.won + 1 }));
+    } else if (nextMistakes >= 6) {
+      setScore((s) => ({ ...s, lost: s.lost + 1 }));
+    }
+  };
+
+  const useHint = () => {
+    if (hintUsed || isOver) return;
+    const unrevealed = word.split('').find((l) => !guessedLetters.has(l));
+    if (unrevealed) {
+      handleGuess(unrevealed);
+      setHintUsed(true);
+    }
+  };
+
+  const nextWord = () => {
+    setWordIndex((prev) => prev + 1);
+    setGuessedLetters(new Set());
+    setHintUsed(false);
+  };
+
+  return (
+    <div className="hangman-container">
+      <h2 className="handwritten" style={{ margin: 0, fontSize: '27px' }}>
+        Hangman Doodle Word • Vocabulary Survival
+      </h2>
+      <p className="typewriter muted-copy" style={{ margin: '4px 0 10px' }}>
+        Guess the study hall vocabulary word one letter at a time before the stickman is fully sketched!
+      </p>
+
+      <div className="game-controls typewriter">
+        <button className="dark-control" type="button" onClick={nextWord}>
+          <RotateCcw aria-hidden="true" /> Next Word
+        </button>
+        <button type="button" onClick={useHint} disabled={hintUsed || isOver}>
+          <HelpCircle aria-hidden="true" /> Hint: {hintUsed ? hint : 'Reveal Letter'}
+        </button>
+      </div>
+
+      <div className="typewriter game-turn">
+        {isWon && '🎉 Victory! You sketched the word without losing your notes!'}
+        {isLost && `💀 Out of chalk strokes! The word was: ${word}`}
+        {!isOver && `Chances left: ${6 - mistakes} / 6 • Topic Hint: ${hint}`}
+      </div>
+
+      <div className="typewriter game-score">
+        Words Solved: {score.won} | Failed: {score.lost} | Accuracy:{' '}
+        {score.won + score.lost > 0 ? Math.round((score.won / (score.won + score.lost)) * 100) : 100}%
+      </div>
+
+      <div className="hangman-stage">
+        <svg className="hangman-svg" viewBox="0 0 100 100" stroke="currentColor" fill="none" strokeWidth="2.5" strokeLinecap="round">
+          {/* Base Stand */}
+          <line x1="10" y1="90" x2="50" y2="90" />
+          {/* Gallows Pole */}
+          <line x1="30" y1="90" x2="30" y2="15" />
+          {/* Beam & Support */}
+          <line x1="30" y1="15" x2="70" y2="15" />
+          <line x1="30" y1="30" x2="45" y2="15" />
+          {/* Rope */}
+          <line x1="70" y1="15" x2="70" y2="28" strokeDasharray="2 2" />
+
+          {/* Stick Figure Parts */}
+          {mistakes >= 1 && <circle cx="70" cy="36" r="8" stroke="#dc2626" />}
+          {mistakes >= 2 && <line x1="70" y1="44" x2="70" y2="65" stroke="#dc2626" />}
+          {mistakes >= 3 && <line x1="70" y1="50" x2="56" y2="58" stroke="#dc2626" />}
+          {mistakes >= 4 && <line x1="70" y1="50" x2="84" y2="58" stroke="#dc2626" />}
+          {mistakes >= 5 && <line x1="70" y1="65" x2="58" y2="82" stroke="#dc2626" />}
+          {mistakes >= 6 && <line x1="70" y1="65" x2="82" y2="82" stroke="#dc2626" />}
+        </svg>
+
+        <div className="hangman-details">
+          <div className="hangman-slots">
+            {word.split('').map((letter, idx) => {
+              const isRevealed = guessedLetters.has(letter) || isLost;
+              return (
+                <div key={idx} className="hangman-slot">
+                  {isRevealed ? letter : ''}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hangman-keyboard">
+            {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((char) => {
+              const isGuessed = guessedLetters.has(char);
+              const isCorrect = isGuessed && word.includes(char);
+              const isWrong = isGuessed && !word.includes(char);
+              let btnClass = 'hangman-key';
+              if (isCorrect) btnClass += ' key-correct';
+              if (isWrong) btnClass += ' key-wrong';
+
+              return (
+                <button
+                  key={char}
+                  type="button"
+                  className={btnClass}
+                  onClick={() => handleGuess(char)}
+                  disabled={isGuessed || isOver}
+                >
+                  {char}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaperBallGame() {
+  const [angle, setAngle] = useState(55);
+  const [power, setPower] = useState(65);
+  const [wind, setWind] = useState(1.5);
+  const [isFlying, setIsFlying] = useState(false);
+  const [resultMessage, setResultMessage] = useState<string | null>(null);
+  const [score, setScore] = useState({ pts: 0, streak: 0, best: 0 });
+  const [ballPos, setBallPos] = useState({ x: 30, y: 160 });
+
+  const randomizeWind = () => {
+    const newWind = parseFloat(((Math.random() - 0.5) * 6).toFixed(1));
+    setWind(newWind);
+  };
+
+  const tossPaper = () => {
+    if (isFlying) return;
+    setIsFlying(true);
+    setResultMessage(null);
+
+    const rad = (angle * Math.PI) / 180;
+    const velocity = power * 1.8;
+    const gravity = 250;
+    let t = 0;
+    const interval = 20;
+
+    const startX = 30;
+    const startY = 160;
+
+    const flightTimer = setInterval(() => {
+      t += interval / 1000;
+      const x = startX + velocity * Math.cos(rad) * t + 0.5 * wind * 30 * t * t;
+      const y = startY - (velocity * Math.sin(rad) * t - 0.5 * gravity * t * t);
+
+      setBallPos({ x, y });
+
+      // Target bin position around x: 260-290, y: 130-160
+      if (y >= 165 || x >= 320) {
+        clearInterval(flightTimer);
+        setIsFlying(false);
+
+        // Check if landed in bin
+        if (x >= 250 && x <= 295 && y >= 120 && y <= 168) {
+          const newStreak = score.streak + 1;
+          const pointsEarned = 100 * newStreak;
+          const newPts = score.pts + pointsEarned;
+          setResultMessage(`🗑️ SWISH! Clean shot into the recycling bin! (+${pointsEarned} pts, x${newStreak} Streak)`);
+          setScore((s) => ({
+            pts: newPts,
+            streak: newStreak,
+            best: Math.max(s.best, newPts),
+          }));
+        } else if (x >= 235 && x <= 310) {
+          setResultMessage('💥 CLANK! Hit the metal rim of the bin! (+25 pts)');
+          setScore((s) => ({ ...s, pts: s.pts + 25 }));
+        } else {
+          setResultMessage('💨 Missed the bin! Paper ball rolled across the classroom floor.');
+          setScore((s) => ({ ...s, streak: 0 }));
+        }
+
+        randomizeWind();
+      }
+    }, interval);
+  };
+
+  const resetGame = () => {
+    setBallPos({ x: 30, y: 160 });
+    setResultMessage(null);
+    randomizeWind();
+  };
+
+  return (
+    <div className="paperball-container">
+      <h2 className="handwritten" style={{ margin: 0, fontSize: '27px' }}>
+        Physics Paper Ball • Crumpled Paper Toss
+      </h2>
+      <p className="typewriter muted-copy" style={{ margin: '4px 0 10px' }}>
+        Calculate your launch trajectory, adjust for open-window breeze, and flick your paper ball into the bin!
+      </p>
+
+      <div className="game-controls typewriter">
+        <button className="dark-control" type="button" onClick={tossPaper} disabled={isFlying}>
+          <Target aria-hidden="true" /> Toss Paper Ball
+        </button>
+        <button type="button" onClick={resetGame} disabled={isFlying}>
+          <RotateCcw aria-hidden="true" /> Reset Position
+        </button>
+      </div>
+
+      <div className="typewriter game-turn">
+        {resultMessage ?? `Wind Drift: ${wind > 0 ? `+${wind} m/s East 💨` : `${wind} m/s West 🌬️`}`}
+      </div>
+
+      <div className="typewriter game-score">
+        Score: {score.pts} | Streak: x{score.streak} | High Score: {score.best}
+      </div>
+
+      <div className="paperball-arena">
+        <div className="paperball-ground" />
+        <div className="paperball-bin" />
+
+        {/* Paper Ball */}
+        <div
+          style={{
+            position: 'absolute',
+            left: `${ballPos.x}px`,
+            top: `${ballPos.y}px`,
+            width: '18px',
+            height: '18px',
+            fontSize: '16px',
+            lineHeight: 1,
+            pointerEvents: 'none',
+            transform: `translate(-50%, -50%) rotate(${ballPos.x * 4}deg)`,
+            transition: isFlying ? 'none' : 'left 0.2s ease, top 0.2s ease',
+          }}
+        >
+          📄
+        </div>
+      </div>
+
+      <div className="paperball-controls-panel">
+        <div className="paperball-slider-group">
+          <label>
+            <span>Launch Angle</span>
+            <span>{angle}°</span>
+          </label>
+          <input
+            type="range"
+            min="20"
+            max="85"
+            value={angle}
+            onChange={(e) => setAngle(Number(e.target.value))}
+            disabled={isFlying}
+          />
+        </div>
+
+        <div className="paperball-slider-group">
+          <label>
+            <span>Throw Power</span>
+            <span>{power}%</span>
+          </label>
+          <input
+            type="range"
+            min="30"
+            max="100"
+            value={power}
+            onChange={(e) => setPower(Number(e.target.value))}
+            disabled={isFlying}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BattleshipGame() {
+  const [playerGrid, setPlayerGrid] = useState<string[]>(() => {
+    const grid = Array(25).fill('empty');
+    // Place 3 player ships (e.g. cells 0, 1, 6, 12, 13, 14)
+    [0, 1, 6, 12, 13, 14].forEach((idx) => (grid[idx] = 'ship'));
+    return grid;
+  });
+
+  const [enemyGrid, setEnemyGrid] = useState<string[]>(() => {
+    const grid = Array(25).fill('empty');
+    // Hidden enemy fleet (3-cell carrier, 2-cell cruiser, 1-cell patrol)
+    [3, 8, 13, 16, 17, 24].forEach((idx) => (grid[idx] = 'ship'));
+    return grid;
+  });
+
+  const [radarHits, setRadarHits] = useState<{ [index: number]: 'hit' | 'miss' }>({});
+  const [playerDamage, setPlayerDamage] = useState<{ [index: number]: 'hit' | 'miss' }>({});
+  const [statusMsg, setStatusMsg] = useState('Call coordinates on Enemy Radar (Grid A1 to E5)!');
+  const [isGameOver, setIsGameOver] = useState(false);
+
+  const enemyShipIndices = [3, 8, 13, 16, 17, 24];
+  const playerShipIndices = [0, 1, 6, 12, 13, 14];
+
+  const enemyHitsCount = Object.keys(radarHits).filter(
+    (idx) => radarHits[Number(idx)] === 'hit'
+  ).length;
+
+  const playerHitsCount = Object.keys(playerDamage).filter(
+    (idx) => playerDamage[Number(idx)] === 'hit'
+  ).length;
+
+  const attackCoord = (index: number) => {
+    if (isGameOver || radarHits[index]) return;
+
+    const isHit = enemyGrid[index] === 'ship';
+    const nextRadar = { ...radarHits, [index]: isHit ? ('hit' as const) : ('miss' as const) };
+    setRadarHits(nextRadar);
+
+    if (isHit) {
+      const nextTotalHits = Object.values(nextRadar).filter((v) => v === 'hit').length;
+      if (nextTotalHits >= enemyShipIndices.length) {
+        setStatusMsg('🏆 FLEET VICTORY! All enemy paper battleships have been sunk!');
+        setIsGameOver(true);
+        return;
+      } else {
+        setStatusMsg('💥 DIRECT HIT on enemy ship! Paper Admiral is scrambling!');
+      }
+    } else {
+      setStatusMsg('• Water Splash. Coordinate missed.');
+    }
+
+    // AI Counter Attack
+    setTimeout(() => {
+      const availablePlayerCoords = Array.from({ length: 25 }, (_, i) => i).filter(
+        (i) => !playerDamage[i]
+      );
+      if (availablePlayerCoords.length === 0) return;
+
+      const aiTarget = availablePlayerCoords[Math.floor(Math.random() * availablePlayerCoords.length)];
+      const aiHit = playerGrid[aiTarget] === 'ship';
+      setPlayerDamage((prev) => {
+        const updated = { ...prev, [aiTarget]: aiHit ? ('hit' as const) : ('miss' as const) };
+        const totalPlayerLost = Object.values(updated).filter((v) => v === 'hit').length;
+        if (totalPlayerLost >= playerShipIndices.length) {
+          setStatusMsg('💀 FLEET LOST! Paper Admiral sunk your defensive flotilla.');
+          setIsGameOver(true);
+        }
+        return updated;
+      });
+    }, 450);
+  };
+
+  const restartBattleship = () => {
+    setRadarHits({});
+    setPlayerDamage({});
+    setIsGameOver(false);
+    setStatusMsg('New radar duel initiated. Select coordinate to fire!');
+  };
+
+  return (
+    <div className="battleship-container">
+      <h2 className="handwritten" style={{ margin: 0, fontSize: '27px' }}>
+        Notebook Battleship • Graph Paper Sea Warfare
+      </h2>
+      <p className="typewriter muted-copy" style={{ margin: '4px 0 10px' }}>
+        Target coordinates on the 5x5 graph paper grid and sink the hidden Paper Fleet before they counter-attack!
+      </p>
+
+      <div className="game-controls typewriter">
+        <button className="dark-control" type="button" onClick={restartBattleship}>
+          <RotateCcw aria-hidden="true" /> Reset Naval Fleet
+        </button>
+      </div>
+
+      <div className="typewriter game-turn">{statusMsg}</div>
+
+      <div className="typewriter game-score">
+        Enemy Ships Sunk: {enemyHitsCount} / {enemyShipIndices.length} | Fleet Health:{' '}
+        {playerShipIndices.length - playerHitsCount} / {playerShipIndices.length}
+      </div>
+
+      <div className="battleship-grids">
+        <div className="battleship-grid-card">
+          <div className="battleship-grid-title">🎯 Enemy Radar Target</div>
+          <div className="battleship-grid-board">
+            {Array.from({ length: 25 }).map((_, idx) => {
+              const state = radarHits[idx];
+              let cellClass = 'battleship-cell';
+              if (state === 'hit') cellClass += ' cell-hit';
+              if (state === 'miss') cellClass += ' cell-miss';
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  className={cellClass}
+                  onClick={() => attackCoord(idx)}
+                  disabled={isGameOver || !!state}
+                >
+                  {state === 'hit' && '💥'}
+                  {state === 'miss' && '•'}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="battleship-grid-card">
+          <div className="battleship-grid-title">🛡️ Your Paper Defense Fleet</div>
+          <div className="battleship-grid-board">
+            {Array.from({ length: 25 }).map((_, idx) => {
+              const hasShip = playerGrid[idx] === 'ship';
+              const state = playerDamage[idx];
+              let cellClass = 'battleship-cell';
+              if (hasShip) cellClass += ' cell-ship';
+              if (state === 'hit') cellClass += ' cell-hit';
+              if (state === 'miss') cellClass += ' cell-miss';
+
+              return (
+                <div key={idx} className={cellClass}>
+                  {state === 'hit' ? '💥' : state === 'miss' ? '•' : hasShip ? '🚢' : ''}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SnakeGame() {
+  const [snake, setSnake] = useState<number[]>([45, 44, 43]);
+  const [food, setFood] = useState<number>(50);
+  const [direction, setDirection] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('RIGHT');
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const GRID_SIZE = 14;
+
+  const resetSnake = () => {
+    setSnake([45, 44, 43]);
+    setFood(Math.floor(Math.random() * (GRID_SIZE * GRID_SIZE)));
+    setDirection('RIGHT');
+    setIsGameOver(false);
+    setScore(0);
+    setIsRunning(true);
+  };
+
+  useEffect(() => {
+    if (!isRunning || isGameOver) return;
+
+    const gameLoop = setInterval(() => {
+      setSnake((prevSnake) => {
+        const head = prevSnake[0];
+        let newHead = head;
+
+        if (direction === 'RIGHT') {
+          if (head % GRID_SIZE === GRID_SIZE - 1) {
+            setIsGameOver(true);
+            return prevSnake;
+          }
+          newHead = head + 1;
+        } else if (direction === 'LEFT') {
+          if (head % GRID_SIZE === 0) {
+            setIsGameOver(true);
+            return prevSnake;
+          }
+          newHead = head - 1;
+        } else if (direction === 'UP') {
+          if (head < GRID_SIZE) {
+            setIsGameOver(true);
+            return prevSnake;
+          }
+          newHead = head - GRID_SIZE;
+        } else if (direction === 'DOWN') {
+          if (head >= GRID_SIZE * (GRID_SIZE - 1)) {
+            setIsGameOver(true);
+            return prevSnake;
+          }
+          newHead = head + GRID_SIZE;
+        }
+
+        if (prevSnake.includes(newHead)) {
+          setIsGameOver(true);
+          return prevSnake;
+        }
+
+        const newSnake = [newHead, ...prevSnake];
+
+        if (newHead === food) {
+          setScore((s) => {
+            const next = s + 10;
+            setBestScore((b) => Math.max(b, next));
+            return next;
+          });
+          setFood(Math.floor(Math.random() * (GRID_SIZE * GRID_SIZE)));
+        } else {
+          newSnake.pop();
+        }
+
+        return newSnake;
+      });
+    }, 160);
+
+    return () => clearInterval(gameLoop);
+  }, [direction, food, isGameOver, isRunning]);
+
+  return (
+    <div className="snake-container">
+      <h2 className="handwritten" style={{ margin: 0, fontSize: '27px' }}>
+        Pencil Snake Grid • Nibble the Eraser Crumbs
+      </h2>
+      <p className="typewriter muted-copy" style={{ margin: '4px 0 10px', textAlign: 'center' }}>
+        Guide the penciled line snake along the notebook rules. Nibble eraser crumbs to extend your graphite stroke!
+      </p>
+
+      <div className="game-controls typewriter">
+        <button className="dark-control" type="button" onClick={resetSnake}>
+          <Play aria-hidden="true" /> {isRunning ? 'Restart Snake' : 'Start Game'}
+        </button>
+      </div>
+
+      <div className="typewriter game-turn">
+        {isGameOver ? '💀 Graphite snapped on the notebook edge!' : isRunning ? 'Crawling along the grid lines…' : 'Press Start Game to play!'}
+      </div>
+
+      <div className="typewriter game-score">
+        Score: {score} | High Score: {bestScore}
+      </div>
+
+      <div className="snake-arena">
+        {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, idx) => {
+          const isHead = snake[0] === idx;
+          const isBody = snake.slice(1).includes(idx);
+          const isFoodCell = food === idx;
+
+          let cellClass = 'snake-cell';
+          if (isHead) cellClass += ' snake-head';
+          else if (isBody) cellClass += ' snake-body';
+          else if (isFoodCell) cellClass += ' snake-food';
+
+          return <div key={idx} className={cellClass} />;
+        })}
+      </div>
+
+      <div className="snake-dpad">
+        <div />
+        <button type="button" onClick={() => direction !== 'DOWN' && setDirection('UP')}>
+          ▲
+        </button>
+        <div />
+        <button type="button" onClick={() => direction !== 'RIGHT' && setDirection('LEFT')}>
+          ◀
+        </button>
+        <button type="button" onClick={() => direction !== 'UP' && setDirection('DOWN')}>
+          ▼
+        </button>
+        <button type="button" onClick={() => direction !== 'LEFT' && setDirection('RIGHT')}>
+          ▶
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TicTacToeGame() {
   const [board, setBoard] = useState<TicTacToeMark[]>(Array(9).fill(null));
   const [aiThinking, setAiThinking] = useState(false);
   const [roundResult, setRoundResult] = useState<string | null>(null);
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [score, setScore] = useState({ X: 0, O: 0, ties: 0 });
-
-  const heroContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
-    },
-  };
-
-  const heroItemVariants = {
-    hidden: { opacity: 0, y: 16 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' as const },
-    },
-  };
 
   function checkGameStatus(nextBoard: TicTacToeMark[]) {
     const winInfo = getTicTacToeWinner(nextBoard);
@@ -1614,6 +2361,93 @@ function GamesPage() {
   }
 
   return (
+    <>
+      <h2 className="handwritten">Ink Duel • Tic-Tac-Toe (X&apos;s &amp; O&apos;s)</h2>
+      <p className="typewriter muted-copy">Blue Ballpoint vs Crimson Pencil margin classic.</p>
+      <div className="game-controls typewriter">
+        <button className="dark-control" type="button" disabled>
+          <Cpu aria-hidden="true" /> VS Paper AI
+        </button>
+        <motion.button
+          type="button"
+          onClick={eraseBoard}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.92 }}
+        >
+          <Eraser aria-hidden="true" /> Erase Board
+        </motion.button>
+      </div>
+      <div className="typewriter game-turn" style={{ minHeight: '20px' }}>
+        {roundResult ?? (aiThinking ? 'Paper AI is thinking…' : 'Your turn (Player X)!')}
+      </div>
+      <div className="typewriter game-score">
+        X Wins: {score.X} | O Wins: {score.O} | Ties: {score.ties}
+      </div>
+      <div className="tic-tac-toe">
+        {board.map((mark, index) => {
+          const isWinningSquare = winningLine?.includes(index);
+          return (
+            <button
+              key={index}
+              type="button"
+              className={`tic-tac-toe-square${isWinningSquare ? ' winning-square' : ''}`}
+              onClick={() => markSquare(index)}
+              disabled={aiThinking || roundResult !== null || mark !== null}
+              aria-label={`Square ${index + 1}`}
+            >
+              <AnimatePresence mode="wait">
+                {mark && (
+                  <motion.span
+                    key={mark}
+                    className={mark === 'O' ? 'red-mark' : ''}
+                    initial={{ scale: 0, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 18 }}
+                  >
+                    {mark}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          );
+        })}
+      </div>
+      <div className="typewriter board-tip">
+        X: Ballpoint Ink • O: Red Pencil Sketch — Tip: The paper AI never sleeps in math class.
+      </div>
+    </>
+  );
+}
+
+function GamesPage() {
+  const [activeGameTab, setActiveGameTab] = useState<'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake'>('tictactoe');
+
+  const heroContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    },
+  };
+
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' as const },
+    },
+  };
+
+  const scrollToArcade = (tabKey: 'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake') => {
+    setActiveGameTab(tabKey);
+    const elem = document.getElementById('arcade-arena');
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  return (
     <SiteFrame page="games">
       <div className="games-content">
         <motion.header
@@ -1657,97 +2491,72 @@ function GamesPage() {
               </motion.span>
             </h1>
             <motion.p className="page-description" variants={heroItemVariants}>
-              Handcrafted mini-games scribbled during long study sessions. Grab your pen, pick a game, and play directly on the notebook paper with full 3D interactive feedback!
+              Handcrafted notebook mini-games scribbled during study hall. Grab your pen, choose any game, and play directly on the graph paper with full real-time interactive physics!
             </motion.p>
           </div>
         </motion.header>
 
-        <div className="game-tabs typewriter">
-          <motion.span className="selected" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
-            1. Tic-Tac-Toe Ink
-          </motion.span>
-          <motion.span whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
-            2. Pencil Snake Grid
-          </motion.span>
-          <motion.span whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.95 }}>
-            3. Scribble Cards Match
-          </motion.span>
+        <div className="game-tabs typewriter" id="arcade-arena">
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'tictactoe' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('tictactoe')}
+          >
+            <Pencil aria-hidden="true" style={{ width: 14, height: 14 }} /> 1. Tic-Tac-Toe Ink
+          </button>
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'hangman' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('hangman')}
+          >
+            <HelpCircle aria-hidden="true" style={{ width: 14, height: 14 }} /> 2. Hangman Doodle Word
+          </button>
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'paperball' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('paperball')}
+          >
+            <Target aria-hidden="true" style={{ width: 14, height: 14 }} /> 3. Physics Paper Ball
+          </button>
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'battleship' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('battleship')}
+          >
+            <Ship aria-hidden="true" style={{ width: 14, height: 14 }} /> 4. Notebook Battleship
+          </button>
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'snake' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('snake')}
+          >
+            <Gamepad2 aria-hidden="true" style={{ width: 14, height: 14 }} /> 5. Pencil Snake Grid
+          </button>
         </div>
 
         <div className="games-layout">
           <div className="game-board-card ink-border shadow-note" style={{ position: 'relative' }}>
-            <h2 className="handwritten">Ink Duel • Tic-Tac-Toe (X&apos;s &amp; O&apos;s)</h2>
-            <p className="typewriter muted-copy">Blue Ballpoint vs Crimson Pencil margin classic.</p>
-            <div className="game-controls typewriter">
-              <button className="dark-control" type="button" disabled>
-                <Cpu aria-hidden="true" /> VS Paper AI
-              </button>
-              <motion.button
-                type="button"
-                onClick={eraseBoard}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.92 }}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeGameTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
               >
-                <Eraser aria-hidden="true" /> Erase Board
-              </motion.button>
-            </div>
-            <div className="typewriter game-turn" style={{ minHeight: '20px' }}>
-              {roundResult ?? (aiThinking ? 'Paper AI is thinking…' : 'Your turn (Player X)!')}
-            </div>
-            <div className="typewriter game-score">
-              X Wins: {score.X} | O Wins: {score.O} | Ties: {score.ties}
-            </div>
-            <div className="tic-tac-toe">
-              {board.map((mark, index) => {
-                const isWinningSquare = winningLine?.includes(index);
-                return (
-                  <button
-                    key={index}
-                    type="button"
-                    className={`tic-tac-toe-square${isWinningSquare ? ' winning-square' : ''}`}
-                    onClick={() => markSquare(index)}
-                    disabled={aiThinking || roundResult !== null || mark !== null}
-                    aria-label={`Square ${index + 1}`}
-                  >
-                    <AnimatePresence mode="wait">
-                      {mark && (
-                        <motion.span
-                          key={mark}
-                          className={mark === 'O' ? 'red-mark' : ''}
-                          initial={{ scale: 0, rotate: -20 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: 'spring', stiffness: 450, damping: 18 }}
-                        >
-                          {mark}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="typewriter board-tip">
-              X: Ballpoint Ink • O: Red Pencil Sketch — Tip: The paper AI never sleeps in math class.
-            </div>
+                {activeGameTab === 'tictactoe' && <TicTacToeGame />}
+                {activeGameTab === 'hangman' && <HangmanGame />}
+                {activeGameTab === 'paperball' && <PaperBallGame />}
+                {activeGameTab === 'battleship' && <BattleshipGame />}
+                {activeGameTab === 'snake' && <SnakeGame />}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           <aside className="game-aside" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Interactive3DBox className="game-note yellow-note ink-border shadow-note" maxTilt={10} depth={16}>
-              <div className="typewriter note-kicker">
-                <StickyNote aria-hidden="true" /> Free Space
-              </div>
-              <p className="handwritten">Jot a doodle here while you think about your next move…</p>
-            </Interactive3DBox>
-            <Interactive3DBox className="game-note ink-border shadow-note" maxTilt={10} depth={16}>
-              <div className="typewriter note-kicker">0 Shavings Collected</div>
-              <div className="shavings-bar">
-                <span />
-              </div>
-              <p className="typewriter">
-                <Award aria-hidden="true" /> Sharpen 25 times to unlock golden chalk badge
-              </p>
-            </Interactive3DBox>
-            <Interactive3DBox className="game-note peach-note ink-border shadow-note" maxTilt={10} depth={16}>
+            <DoodlePadWidget />
+            <PencilSharpenerWidget />
+            <Interactive3DBox className="game-note peach-note ink-border shadow-note" maxTilt={8} depth={16}>
               <div className="typewriter note-kicker">Quick Memo</div>
               <p className="handwritten">
                 Remember to close the notebook before Teacher Davies walks down row 3! Keep margins clean for algebra notes.
@@ -1758,33 +2567,36 @@ function GamesPage() {
 
         <section className="draft-section">
           <p className="section-kicker typewriter">
-            <Pencil aria-hidden="true" /> In the Drafting Phase • Upcoming Notebook Game Drafts
+            <Pencil aria-hidden="true" /> Playable Notebook Arcades • Click To Launch Game
           </p>
-          <h2 className="home-section-title handwritten">Blueprinted for Next Semester</h2>
+          <h2 className="home-section-title handwritten">All Games Now Fully Playable</h2>
           <div className="draft-grid">
             {[
-              [
-                'Notebook Battleship',
-                'Grid Coordinates: A1 to J10',
-                'Graph paper sea warfare — call out coordinates and sink your classmate’s paper fleet before the bell rings.',
-                'Drafting 70%',
-                '2 Players / Split Paper',
-              ],
-              [
-                'Hangman Doodle Word',
-                'Vocabulary test survival',
-                'Guess vocabulary words one letter at a time. Each wrong guess adds a stroke to the doodled stick figure.',
-                'Concept Sketched',
-                '1-4 Players / Pass Sheet',
-              ],
-              [
-                'Physics Paper Ball',
-                'Crumpled Paper Toss',
-                'Aim your flick shot into the recycling bin across the room. Wind from the open window changes the trajectory.',
-                'Prototype',
-                'Physics Engine / High Score',
-              ],
-            ].map(([title, kicker, copy, badge, footer], idx) => (
+              {
+                id: 'battleship' as const,
+                title: 'Notebook Battleship',
+                kicker: 'Grid Coordinates: A1 to E5',
+                copy: 'Graph paper sea warfare — call out radar coordinates and sink the enemy paper flotilla before the bell rings.',
+                badge: 'Playable Now',
+                footer: '5x5 Radar Grid',
+              },
+              {
+                id: 'hangman' as const,
+                title: 'Hangman Doodle Word',
+                kicker: 'Vocabulary test survival',
+                copy: 'Guess vocabulary words one letter at a time. Each wrong guess adds a stroke to the doodled stick figure.',
+                badge: 'Playable Now',
+                footer: 'Study Hall Vocab',
+              },
+              {
+                id: 'paperball' as const,
+                title: 'Physics Paper Ball',
+                kicker: 'Crumpled Paper Toss',
+                copy: 'Aim your flick shot into the recycling bin across the room. Wind from the open window changes the trajectory.',
+                badge: 'Playable Now',
+                footer: 'Ballistic Physics',
+              },
+            ].map(({ id, title, kicker, copy, badge, footer }, idx) => (
               <motion.div
                 key={title}
                 initial={{ opacity: 0, y: 20 }}
@@ -1797,14 +2609,25 @@ function GamesPage() {
                   className="draft-card ink-border shadow-note"
                   maxTilt={10}
                   depth={20}
-                  style={{ height: '100%' }}
+                  style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
                 >
-                  <span className="draft-badge typewriter">{badge}</span>
-                  <h3 className="handwritten">{title}</h3>
-                  <p className="typewriter draft-kicker">{kicker}</p>
-                  <p>{copy}</p>
-                  <div className="typewriter draft-footer">
-                    <Lock aria-hidden="true" /> {footer}
+                  <div>
+                    <span className="draft-badge typewriter">{badge}</span>
+                    <h3 className="handwritten">{title}</h3>
+                    <p className="typewriter draft-kicker">{kicker}</p>
+                    <p>{copy}</p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      className="play-draft-btn"
+                      onClick={() => scrollToArcade(id)}
+                    >
+                      <Play aria-hidden="true" style={{ width: 12, height: 12 }} /> Play {title.split(' ')[1] || 'Game'}
+                    </button>
+                    <div className="typewriter draft-footer" style={{ marginTop: '8px' }}>
+                      <Check aria-hidden="true" style={{ width: 12, height: 12, display: 'inline', marginRight: 4 }} /> {footer}
+                    </div>
                   </div>
                 </Interactive3DBox>
               </motion.div>
