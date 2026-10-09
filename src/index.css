@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @font-face {
   font-family: 'Falaq Sans';
@@ -9,7 +9,7 @@
 }
 
 :root {
-  --note-ink: #252621;
+  --note-ink: #1e201b;
   --note-rule: #cbd8e2;
   --note-margin: #d99e97;
   --note-cream: #f4f0e6;
@@ -17,12 +17,12 @@
   --note-blue: #dcecf0;
   --note-surface: #fffdf7;
   --note-surface-soft: #eee8da;
-  --note-muted: #67685f;
+  --note-muted: #575950;
   --note-accent: #b43b35;
   --note-shadow: rgb(37 38 33 / 14%);
-  --font-hand: 'Falaq Sans', cursive;
-  --font-body: 'Falaq Sans', system-ui, sans-serif;
-  --font-mono: 'Space Mono', ui-monospace, monospace;
+  --font-hand: 'Falaq Sans', 'Caveat', cursive;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .dark {
@@ -47,6 +47,7 @@
 
 html {
   scroll-behavior: smooth;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -55,7 +56,18 @@ body {
   background: var(--note-cream);
   color: var(--note-ink);
   font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+p {
+  margin: 0 0 12px;
+  line-height: 1.62;
 }
 
 a {

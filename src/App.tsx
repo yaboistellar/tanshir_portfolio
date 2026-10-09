@@ -1040,7 +1040,7 @@ function HomePage() {
   });
 
   const toolkit = [
-    { name: 'Figma', kind: 'Cool Bababoey UI/UX Design', detail: 'Design Systems & Prototypes', icon: <PenTool /> },
+    { name: 'Figma', kind: 'UI/UX & Design Systems', detail: 'Design Systems & Prototypes', icon: <PenTool /> },
     { name: 'ChatGPT', kind: 'AI / Ideation', detail: 'Prompt Crafting & Logic', icon: <Cpu /> },
     { name: 'Gemini', kind: 'Multimodal AI', detail: 'Deep Research & Vision', icon: <Sparkles /> },
     { name: 'Google Stitch', kind: 'AI Design Tool', detail: 'Generative UI Architecture', icon: <MousePointerClick /> },
