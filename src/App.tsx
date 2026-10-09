@@ -21,6 +21,7 @@ import {
   Linkedin,
   Lock,
   Menu,
+  Moon,
   MousePointerClick,
   Pencil,
   PenLine,
@@ -31,6 +32,7 @@ import {
   Sparkles,
   Star,
   StickyNote,
+  Sun,
   Terminal,
   Timer,
 } from 'lucide-react';
@@ -83,7 +85,88 @@ function Navigation({
   );
 }
 
-function SiteHeader({ page }: { page: PageKey }) {
+function useTheme() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('theme', theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  return { theme, isDark: theme === 'dark', toggleTheme };
+}
+
+function ThemeToggleButton({
+  isDark,
+  onToggle,
+  mobile,
+}: {
+  isDark: boolean;
+  onToggle: () => void;
+  mobile?: boolean;
+}) {
+  return (
+    <motion.button
+      type="button"
+      className={`theme-toggle-btn typewriter${mobile ? ' mobile' : ''}`}
+      onClick={onToggle}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.94 }}
+      aria-label={isDark ? 'Switch to Day Paper mode' : 'Switch to Night Ink mode'}
+      title={isDark ? 'Switch to Day Paper' : 'Switch to Night Ink'}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={isDark ? 'dark' : 'light'}
+          initial={{ y: -8, opacity: 0, rotate: -30 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          exit={{ y: 8, opacity: 0, rotate: 30 }}
+          transition={{ duration: 0.18, ease: 'easeOut' as const }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+        >
+          {isDark ? (
+            <Sun className="theme-toggle-icon" aria-hidden="true" />
+          ) : (
+            <Moon className="theme-toggle-icon" aria-hidden="true" />
+          )}
+          <span className="theme-toggle-label">{isDark ? 'DAY INK' : 'NIGHT INK'}</span>
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+function SiteHeader({
+  page,
+  isDark,
+  onToggleTheme,
+}: {
+  page: PageKey;
+  isDark: boolean;
+  onToggleTheme: () => void;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -112,24 +195,30 @@ function SiteHeader({ page }: { page: PageKey }) {
             </motion.span>
             <span>Tanshir Al Musnad</span>
           </motion.a>
-          <Navigation page={page} />
-          <button
-            className="menu-button"
-            type="button"
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <Menu aria-hidden="true" />
-          </button>
+          <div className="header-nav-cluster">
+            <Navigation page={page} />
+            <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} />
+            <button
+              className="menu-button"
+              type="button"
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <Menu aria-hidden="true" />
+            </button>
+          </div>
         </div>
         {menuOpen && (
-          <div className="site-width">
+          <div className="site-width mobile-menu-wrap">
             <Navigation
               page={page}
               mobile
               onNavigate={() => setMenuOpen(false)}
             />
+            <div className="mobile-theme-row">
+              <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} mobile />
+            </div>
           </div>
         )}
       </header>
@@ -232,6 +321,7 @@ function SiteFrame({
   children: React.ReactNode;
   className?: string;
 }) {
+  const { isDark, toggleTheme } = useTheme();
   const [stamps, setStamps] = useState<MarginStamp[]>([]);
   const stampIndexRef = useRef(0);
   const doodleSymbols = ['✦', '✎', '☕', '★', '〰', '✧', '♡', '◇', '◡'];
@@ -324,7 +414,7 @@ function SiteFrame({
         </span>
       ))}
       <PaperDecorations />
-      <SiteHeader page={page} />
+      <SiteHeader page={page} isDark={isDark} onToggleTheme={toggleTheme} />
       <main className="site-width page-main">{children}</main>
       <SiteFooter />
     </div>
@@ -427,13 +517,19 @@ function ThreeBackgroundScene() {
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
+    // Check theme initially
+    const isInitialDark = document.documentElement.classList.contains('dark');
+    let mainColor = isInitialDark ? 0xeee7d8 : 0x252621;
+    let accentColor = isInitialDark ? 0xef8275 : 0xb43b35;
+    let mutedColor = isInitialDark ? 0xaeb8b4 : 0x67685f;
+
     // 1. Central Massive Drafting Desk Geometric Polyhedron (Icosahedron)
     const outerGeom = new THREE.IcosahedronGeometry(2.6, 0);
     const outerMat = new THREE.MeshBasicMaterial({
-      color: 0x252621,
+      color: mainColor,
       wireframe: true,
       transparent: true,
-      opacity: 0.28,
+      opacity: isInitialDark ? 0.38 : 0.28,
     });
     const outerMesh = new THREE.Mesh(outerGeom, outerMat);
     worldGroup.add(outerMesh);
@@ -441,10 +537,10 @@ function ThreeBackgroundScene() {
     // 2. Secondary Nested Dodecahedron in Crimson Ink
     const midGeom = new THREE.DodecahedronGeometry(1.95, 0);
     const midMat = new THREE.MeshBasicMaterial({
-      color: 0xb43b35,
+      color: accentColor,
       wireframe: true,
       transparent: true,
-      opacity: 0.35,
+      opacity: isInitialDark ? 0.45 : 0.35,
     });
     const midMesh = new THREE.Mesh(midGeom, midMat);
     worldGroup.add(midMesh);
@@ -452,10 +548,10 @@ function ThreeBackgroundScene() {
     // 3. Inner Fast-spinning Octahedron Core
     const coreGeom = new THREE.OctahedronGeometry(1.15, 0);
     const coreMat = new THREE.MeshBasicMaterial({
-      color: 0x252621,
+      color: mainColor,
       wireframe: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: isInitialDark ? 0.55 : 0.45,
     });
     const coreMesh = new THREE.Mesh(coreGeom, coreMat);
     worldGroup.add(coreMesh);
@@ -463,10 +559,10 @@ function ThreeBackgroundScene() {
     // 4. Orbiting Celestial/Drafting Astrolabe Rings
     const ringGeom1 = new THREE.TorusGeometry(3.8, 0.015, 12, 80);
     const ringMat1 = new THREE.MeshBasicMaterial({
-      color: 0x252621,
+      color: mainColor,
       wireframe: true,
       transparent: true,
-      opacity: 0.22,
+      opacity: isInitialDark ? 0.3 : 0.22,
     });
     const ringMesh1 = new THREE.Mesh(ringGeom1, ringMat1);
     ringMesh1.rotation.x = Math.PI / 3.5;
@@ -475,10 +571,10 @@ function ThreeBackgroundScene() {
 
     const ringGeom2 = new THREE.TorusGeometry(4.4, 0.015, 12, 80);
     const ringMat2 = new THREE.MeshBasicMaterial({
-      color: 0xb43b35,
+      color: accentColor,
       wireframe: true,
       transparent: true,
-      opacity: 0.2,
+      opacity: isInitialDark ? 0.28 : 0.2,
     });
     const ringMesh2 = new THREE.Mesh(ringGeom2, ringMat2);
     ringMesh2.rotation.x = -Math.PI / 4;
@@ -486,9 +582,9 @@ function ThreeBackgroundScene() {
     worldGroup.add(ringMesh2);
 
     // 5. Desk Blueprint Grid Helper
-    const gridHelper = new THREE.GridHelper(18, 22, 0xb43b35, 0x252621);
+    const gridHelper = new THREE.GridHelper(18, 22, accentColor, mainColor);
     (gridHelper.material as THREE.Material).transparent = true;
-    (gridHelper.material as THREE.Material).opacity = 0.09;
+    (gridHelper.material as THREE.Material).opacity = isInitialDark ? 0.14 : 0.09;
     gridHelper.position.y = -3.4;
     gridHelper.rotation.x = 0.25;
     worldGroup.add(gridHelper);
@@ -511,9 +607,9 @@ function ThreeBackgroundScene() {
     ];
 
     const inkMaterials = [
-      new THREE.MeshBasicMaterial({ color: 0x252621, wireframe: true, transparent: true, opacity: 0.25 }),
-      new THREE.MeshBasicMaterial({ color: 0xb43b35, wireframe: true, transparent: true, opacity: 0.28 }),
-      new THREE.MeshBasicMaterial({ color: 0x67685f, wireframe: true, transparent: true, opacity: 0.22 }),
+      new THREE.MeshBasicMaterial({ color: mainColor, wireframe: true, transparent: true, opacity: isInitialDark ? 0.32 : 0.25 }),
+      new THREE.MeshBasicMaterial({ color: accentColor, wireframe: true, transparent: true, opacity: isInitialDark ? 0.36 : 0.28 }),
+      new THREE.MeshBasicMaterial({ color: mutedColor, wireframe: true, transparent: true, opacity: isInitialDark ? 0.3 : 0.22 }),
     ];
 
     const positions = [
@@ -553,6 +649,36 @@ function ThreeBackgroundScene() {
         basePos,
       });
     });
+
+    const updateThemeColors = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const curMain = isDark ? 0xeee7d8 : 0x252621;
+      const curAccent = isDark ? 0xef8275 : 0xb43b35;
+      const curMuted = isDark ? 0xaeb8b4 : 0x67685f;
+
+      outerMat.color.setHex(curMain);
+      outerMat.opacity = isDark ? 0.38 : 0.28;
+      midMat.color.setHex(curAccent);
+      midMat.opacity = isDark ? 0.45 : 0.35;
+      coreMat.color.setHex(curMain);
+      coreMat.opacity = isDark ? 0.55 : 0.45;
+      ringMat1.color.setHex(curMain);
+      ringMat2.color.setHex(curAccent);
+
+      inkMaterials[0].color.setHex(curMain);
+      inkMaterials[1].color.setHex(curAccent);
+      inkMaterials[2].color.setHex(curMuted);
+    };
+
+    const themeObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateThemeColors();
+        }
+      }
+    });
+
+    themeObserver.observe(document.documentElement, { attributes: true });
 
     let mouseX = 0;
     let mouseY = 0;
@@ -626,6 +752,7 @@ function ThreeBackgroundScene() {
     window.addEventListener('resize', handleResize);
 
     return () => {
+      themeObserver.disconnect();
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);

@@ -199,6 +199,12 @@ a:focus-visible {
   stroke-width: 2;
 }
 
+.header-nav-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .desktop-nav {
   display: flex;
   align-items: center;
@@ -222,6 +228,41 @@ a:focus-visible {
   color: var(--note-cream);
 }
 
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px solid var(--note-ink);
+  border-radius: 4px;
+  background: var(--note-surface);
+  color: var(--note-ink);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 1.5px 2px 0 rgb(26 26 26 / 12%);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--note-surface-soft);
+  box-shadow: 2.5px 3.5px 0 rgb(26 26 26 / 18%);
+}
+
+.theme-toggle-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.theme-toggle-label {
+  font-size: 10px;
+  line-height: 1;
+}
+
 .menu-button {
   display: none;
   padding: 8px;
@@ -236,6 +277,11 @@ a:focus-visible {
 
 .mobile-nav {
   display: none;
+}
+
+.mobile-theme-row {
+  display: none;
+  padding-top: 10px;
 }
 
 .page-main {
@@ -2705,7 +2751,7 @@ html.lenis, html.lenis body {
   align-items: center;
   gap: 6px;
   border: 2px dashed var(--note-ink);
-  background: #fffdf5;
+  background: var(--note-surface);
   padding: 12px;
   box-shadow: 3px 5px 0 rgb(26 26 26 / 14%);
   transform: rotate(1deg);
@@ -2715,4 +2761,218 @@ html.lenis, html.lenis body {
 .three-desk-wrapper:hover {
   transform: rotate(0deg) translateY(-4px);
   box-shadow: 6px 9px 0 rgb(26 26 26 / 18%);
+}
+
+/* ==========================================================================
+   Dark Mode (Night Ink) Comprehensive Theme Overrides
+   ========================================================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark .notebook-page {
+  background-color: var(--note-cream);
+  background-image:
+    linear-gradient(
+      to right,
+      var(--note-margin) 0,
+      var(--note-margin) 2px,
+      transparent 2px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(2rem - 1px),
+      var(--note-rule) calc(2rem - 1px),
+      var(--note-rule) 2rem,
+      transparent 2rem
+    );
+}
+
+.dark .site-header {
+  background: rgb(24 33 38 / 92%);
+  border-bottom-color: var(--note-ink);
+}
+
+.dark .availability {
+  background: #12191d;
+  border-bottom-color: var(--note-ink);
+  color: var(--note-ink);
+}
+
+.dark .brand svg {
+  fill: var(--note-ink);
+}
+
+.dark .nav-link:hover {
+  background: rgb(238 231 216 / 12%);
+}
+
+.dark .nav-link.active {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}
+
+.dark .portrait-frame {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+}
+
+.dark .tape-tab {
+  background: rgb(185 152 67 / 60%);
+}
+
+.dark .white-note,
+.dark .project-card,
+.dark .toolkit-card,
+.dark .contact-form,
+.dark .game-board-card,
+.dark .sprint-card,
+.dark .book-card,
+.dark .current-school,
+.dark .specialization-card,
+.dark .previous-card,
+.dark .quote-card,
+.dark .shelf-category,
+.dark .reading-stats {
+  background: var(--note-surface);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .cream-note {
+  background: #25333a;
+  border-color: var(--note-ink);
+}
+
+.dark .yellow-note {
+  background: #2d383e;
+  border-color: var(--note-ink);
+}
+
+.dark .note-card span:last-child,
+.dark .muted-copy,
+.dark .game-score,
+.dark .board-tip,
+.dark .section-subtitle,
+.dark .eyebrow {
+  color: var(--note-muted);
+}
+
+.dark .filter-chip {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+  color: var(--note-ink);
+}
+
+.dark .filter-chip.selected {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}
+
+.dark .filter-chip:hover:not(.selected) {
+  background: var(--note-surface-soft);
+}
+
+.dark .tag-row span,
+.dark .skill {
+  background: #28373d;
+  border-color: var(--note-rule);
+  color: var(--note-ink);
+}
+
+.dark .contact-form input:not([type='checkbox']),
+.dark .contact-form textarea {
+  background: var(--note-cream);
+  color: var(--note-ink);
+  border-bottom-color: var(--note-ink);
+}
+
+.dark .contact-links {
+  border-top-color: rgb(238 231 216 / 25%);
+}
+
+.dark .dashed-button {
+  border-color: var(--note-ink);
+  color: var(--note-ink);
+}
+
+.dark .dashed-button:hover {
+  background: rgb(238 231 216 / 8%);
+}
+
+.dark .ink-button {
+  background: var(--note-ink);
+  color: var(--note-cream);
+  border-color: var(--note-ink);
+}
+
+.dark .mouse-indicator {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+}
+
+.dark .mouse-wheel-dot {
+  background: var(--note-ink);
+}
+
+.dark .scroll-progress-bar {
+  background: var(--note-ink);
+}
+
+.dark .card-glare {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 60%);
+}
+
+.dark .paper-coffee {
+  opacity: 0.12;
+}
+
+.dark .paper-doodle {
+  color: var(--note-rule);
+}
+
+.dark .margin-stamp {
+  color: var(--note-ink);
+}
+
+.dark .site-footer {
+  background: var(--note-cream);
+  border-top-color: var(--note-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dark .ink-cursor-dot {
+    background: var(--note-ink);
+    mix-blend-mode: normal;
+  }
+
+  .dark .ink-cursor-ring {
+    border-color: var(--note-ink);
+  }
+
+  .dark .ink-cursor-ring.active {
+    background: rgb(238 231 216 / 12%);
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-menu-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px dashed rgb(26 26 26 / 30%);
+    padding: 10px 0 14px;
+    animation: menu-in 160ms ease-out both;
+  }
+
+  .dark .mobile-menu-wrap {
+    border-top-color: rgb(238 231 216 / 30%);
+  }
+
+  .mobile-theme-row {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 6px;
+  }
 }
