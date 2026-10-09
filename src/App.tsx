@@ -1418,7 +1418,7 @@ function HomePage() {
               <div className="contact-links typewriter">
                 <div>
                   {[
-                    { label: 'GitHub', href: 'https://github.com/yaboistellar/tanshir_portfolio', icon: <Github aria-hidden="true" /> },
+                    { label: 'GitHub', href: 'https://github.com/yaboistellar', icon: <Github aria-hidden="true" /> },
                     { label: 'Instagram', href: 'https://www.instagram.com/curtainsyh/', icon: <Instagram aria-hidden="true" /> },
                     { label: 'Facebook', href: 'https://web.facebook.com/profile.php?id=61590300914480', icon: <Facebook aria-hidden="true" /> },
                     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/tanshir-al-musnad-020914424/', icon: <Linkedin aria-hidden="true" /> },
