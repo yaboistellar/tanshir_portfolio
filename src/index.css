@@ -3716,3 +3716,35 @@ html.lenis, html.lenis body {
     padding-top: 6px;
   }
 }
+
+.mobile-notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 6px;
+  padding: 10px 14px;
+  border: 1.5px dashed var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 2px;
+  box-shadow: 2px 3px 0 var(--note-shadow);
+}
+
+.mobile-notice-banner svg {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  color: var(--note-accent);
+}
+
+.dark .mobile-notice-banner {
+  background: var(--note-surface) !important;
+  border-color: var(--note-rule) !important;
+  color: #ffffff !important;
+}
+
+.dark .mobile-notice-banner span {
+  color: #ffffff !important;
+}

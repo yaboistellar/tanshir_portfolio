@@ -35,6 +35,7 @@ import {
   RotateCcw,
   Send,
   Ship,
+  Smartphone,
   Sparkles,
   Star,
   StickyNote,
@@ -2493,6 +2494,12 @@ function GamesPage() {
             <motion.p className="page-description" variants={heroItemVariants}>
               Handcrafted notebook mini-games scribbled during study hall. Grab your pen, choose any game, and play directly on the graph paper with full real-time interactive physics!
             </motion.p>
+            <motion.div className="mobile-notice-banner typewriter" variants={heroItemVariants}>
+              <Smartphone aria-hidden="true" />
+              <span>
+                <strong>Desk Note:</strong> Best experienced on desktop / laptop screens. Touch gestures and mobile layouts for arcade games are still being tuned and don&apos;t work properly on mobile devices yet.
+              </span>
+            </motion.div>
           </div>
         </motion.header>
 
@@ -2773,6 +2780,12 @@ function BookshelfPage() {
             <motion.p className="hero-description" variants={heroItemVariants} style={{ margin: '12px 0 0' }}>
               Curated readings on cognitive psychology, typography, interaction systems, and stories that spark imagination.
             </motion.p>
+            <motion.div className="mobile-notice-banner typewriter" variants={heroItemVariants}>
+              <Smartphone aria-hidden="true" />
+              <span>
+                <strong>Desk Note:</strong> The 3D interactive bookshelf layout is best viewed on desktop. A dedicated mobile reading layout is still under development and doesn&apos;t display properly on mobile screens yet.
+              </span>
+            </motion.div>
           </div>
           <Interactive3DBox className="desk-stats dashed-ink typewriter" maxTilt={8} depth={16}>
             <strong>Desk Stats // 2024</strong>
