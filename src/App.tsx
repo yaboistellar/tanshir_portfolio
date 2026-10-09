@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import Lenis from 'lenis';
+import * as THREE from 'three';
 import {
   ArrowDown,
   ArrowRight,
@@ -398,6 +399,228 @@ function ScrollDownIndicator({ targetId = 'projects' }: { targetId?: string }) {
   );
 }
 
+function ThreeDeskScene() {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    const width = container.clientWidth || 180;
+    const height = container.clientHeight || 150;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.z = 4.8;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // 3D Wireframe Icosahedron (Sketchbook Geometric Ink Model)
+    const geom1 = new THREE.IcosahedronGeometry(1.25, 0);
+    const wireMat1 = new THREE.MeshBasicMaterial({
+      color: 0x252621,
+      wireframe: true,
+    });
+    const mesh1 = new THREE.Mesh(geom1, wireMat1);
+    scene.add(mesh1);
+
+    // Inner glowing paper/ink core
+    const geomCore = new THREE.OctahedronGeometry(0.65, 0);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: 0xb43b35,
+      wireframe: true,
+    });
+    const meshCore = new THREE.Mesh(geomCore, coreMat);
+    scene.add(meshCore);
+
+    // Floating 3D Ink Stars
+    const starGeom = new THREE.TetrahedronGeometry(0.18, 0);
+    const starMat = new THREE.MeshBasicMaterial({ color: 0x252621, wireframe: true });
+    const stars: THREE.Mesh[] = [];
+    for (let i = 0; i < 5; i++) {
+      const star = new THREE.Mesh(starGeom, starMat);
+      const angle = (i / 5) * Math.PI * 2;
+      const radius = 1.9;
+      star.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.7, (Math.random() - 0.5) * 1.2);
+      scene.add(star);
+      stars.push(star);
+    }
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left - width / 2;
+      const y = e.clientY - rect.top - height / 2;
+      mouseX = (x / width) * 2;
+      mouseY = -(y / height) * 2;
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+
+    let animationFrameId: number;
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const elapsed = clock.getElapsedTime();
+
+      targetX += (mouseX - targetX) * 0.06;
+      targetY += (mouseY - targetY) * 0.06;
+
+      mesh1.rotation.x = elapsed * 0.4 + targetY * 1.5;
+      mesh1.rotation.y = elapsed * 0.5 + targetX * 1.5;
+      mesh1.position.y = Math.sin(elapsed * 1.6) * 0.1;
+
+      meshCore.rotation.x = -elapsed * 0.6;
+      meshCore.rotation.y = -elapsed * 0.7;
+
+      stars.forEach((star, idx) => {
+        star.rotation.x += delta * (idx % 2 === 0 ? 1.2 : -1.2);
+        star.rotation.y += delta * 1.6;
+        star.position.y += Math.sin(elapsed * 2.2 + idx) * 0.003;
+      });
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      if (!container) return;
+      const newW = container.clientWidth;
+      const newH = container.clientHeight;
+      if (newW === 0 || newH === 0) return;
+      camera.aspect = newW / newH;
+      camera.updateProjectionMatrix();
+      renderer.setSize(newW, newH);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
+      geom1.dispose();
+      geomCore.dispose();
+      starGeom.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mountRef}
+      style={{
+        width: '100%',
+        height: '140px',
+        display: 'grid',
+        placeItems: 'center',
+        cursor: 'grab',
+      }}
+    />
+  );
+}
+
+interface ProjectItem {
+  title: string;
+  icon: React.ReactNode;
+  number: string;
+  copy: string;
+  tags: string[];
+  category: string[];
+  action: string;
+}
+
+function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(y, [-120, 120], [16, -16]), { stiffness: 300, damping: 20 });
+  const rotateY = useSpring(useTransform(x, [-120, 120], [-16, 16]), { stiffness: 300, damping: 20 });
+  const glareOpacity = useSpring(useTransform(y, [-120, 120], [0.35, 0]), { stiffness: 300, damping: 20 });
+
+  function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set(e.clientX - centerX);
+    y.set(e.clientY - centerY);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
+
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, scale: 0.92, rotateX: 14 }}
+      whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      exit={{ opacity: 0, scale: 0.92 }}
+      transition={{ duration: 0.45, ease: 'easeOut' as const }}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: 'preserve-3d',
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      whileHover={{ scale: 1.04, z: 25 }}
+      className="project-card ink-border shadow-note card-3d"
+      key={project.title}
+    >
+      <motion.div
+        className="card-glare"
+        style={{ opacity: glareOpacity }}
+        aria-hidden="true"
+      />
+      <div className="project-meta" style={{ transform: 'translateZ(26px)', transformStyle: 'preserve-3d' }}>
+        <motion.span
+          className="project-icon"
+          whileHover={{ scale: 1.2, rotate: 10 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 15 }}
+        >
+          {project.icon}
+        </motion.span>
+        <span className="typewriter">Demo Project {project.number}</span>
+      </div>
+      <h3 className="handwritten" style={{ transform: 'translateZ(34px)' }}>
+        {project.title}
+      </h3>
+      <p style={{ transform: 'translateZ(20px)' }}>{project.copy}</p>
+      <div className="tag-row typewriter" style={{ transform: 'translateZ(28px)' }}>
+        {project.tags.map((tag: string) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+      <div style={{ transform: 'translateZ(30px)' }}>
+        <motion.button
+          className="text-link handwritten"
+          type="button"
+          whileHover={{ x: 6 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {project.action} <ArrowRight aria-hidden="true" />
+        </motion.button>
+      </div>
+    </motion.article>
+  );
+}
+
 type FormStatus = 'idle' | 'sending' | 'success' | 'error';
 type ProjectFilter = 'all' | 'ux' | 'web' | 'code';
 
@@ -649,7 +872,21 @@ function HomePage() {
               <ArrowRight aria-hidden="true" /> homework inside!
             </motion.div>
           </div>
-          <motion.div className="home-stats" variants={heroItemVariants}>
+          <motion.div className="home-stats" variants={heroItemVariants} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+            <motion.div
+              className="three-desk-wrapper ink-border"
+              whileHover={{ y: -4, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <div className="typewriter note-kicker" style={{ width: '100%', justifyContent: 'space-between' }}>
+                <span><Sparkles aria-hidden="true" /> 3D Geometric Desk Model</span>
+                <span style={{ fontSize: '9px', opacity: 0.6 }}>Interactive WebGL</span>
+              </div>
+              <ThreeDeskScene />
+              <div className="typewriter" style={{ fontSize: '10px', color: 'var(--note-muted)', textAlign: 'center' }}>
+                hover / move mouse to rotate in 3D
+              </div>
+            </motion.div>
             <motion.div
               className="note-card cream-note"
               whileHover={{ y: -4, rotate: -0.8 }}
@@ -715,42 +952,7 @@ function HomePage() {
           <motion.div layout className="project-grid">
             <AnimatePresence mode="popLayout">
               {filteredProjects.map((project) => (
-                <motion.article
-                  layout
-                  initial={{ opacity: 0, scale: 0.94, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.94, y: 16 }}
-                  transition={{ duration: 0.35, ease: 'easeOut' as const }}
-                  whileHover={{ y: -6 }}
-                  className="project-card ink-border shadow-note"
-                  key={project.title}
-                >
-                  <div className="project-meta">
-                    <motion.span
-                      className="project-icon"
-                      whileHover={{ scale: 1.15, rotate: 8 }}
-                      transition={{ type: 'spring', stiffness: 350, damping: 15 }}
-                    >
-                      {project.icon}
-                    </motion.span>
-                    <span className="typewriter">Demo Project {project.number}</span>
-                  </div>
-                  <h3 className="handwritten">{project.title}</h3>
-                  <p>{project.copy}</p>
-                  <div className="tag-row typewriter">
-                    {project.tags.map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                  <motion.button
-                    className="text-link handwritten"
-                    type="button"
-                    whileHover={{ x: 4 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {project.action} <ArrowRight aria-hidden="true" />
-                  </motion.button>
-                </motion.article>
+                <Interactive3DProjectCard key={project.title} project={project} />
               ))}
             </AnimatePresence>
           </motion.div>
