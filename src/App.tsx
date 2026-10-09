@@ -518,6 +518,15 @@ function HomePage() {
     },
   };
 
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroScrollProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.93]);
+  const heroOpacity = useTransform(heroScrollProgress, [0, 0.75, 1], [1, 0.9, 0.3]);
+  const heroY = useTransform(heroScrollProgress, [0, 1], [0, 70]);
+
   const portraitMouseX = useMotionValue(0);
   const portraitMouseY = useMotionValue(0);
   const portraitRotateX = useSpring(useTransform(portraitMouseY, [-100, 100], [10, -10]), { stiffness: 240, damping: 20 });
@@ -540,10 +549,12 @@ function HomePage() {
     <SiteFrame page="home" className="home-page">
       <div className="home-content">
         <motion.section
+          ref={heroRef}
           className="home-hero"
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
+          style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}
         >
           <motion.div
             className="portrait-frame ink-border shadow-note"
@@ -562,21 +573,41 @@ function HomePage() {
             <img src={portraitSrc} alt="Pixel portrait of Tanshir" />
           </motion.div>
           <div className="hero-copy">
-            <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
-              • Page 01 • Cover Sheet
-            </motion.p>
-            <motion.h1 className="hero-title handwritten" variants={heroItemVariants}>
-              Hello, I&apos;m Tanshir{' '}
+            <div style={{ overflow: 'hidden' }}>
+              <motion.p
+                className="eyebrow typewriter"
+                initial={{ y: '100%', opacity: 0 }}
+                animate={{ y: '0%', opacity: 1 }}
+                transition={{ duration: 0.5, ease: 'easeOut' as const }}
+              >
+                • Page 01 • Cover Sheet
+              </motion.p>
+            </div>
+            <h1 className="hero-title handwritten" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              {['Hello,', "I'm", 'Tanshir'].map((word, i) => (
+                <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
+                  <motion.span
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: '120%', opacity: 0, rotate: i % 2 === 0 ? 3 : -3 }}
+                    animate={{ y: '0%', opacity: 1, rotate: 0 }}
+                    transition={{ duration: 0.65, delay: 0.15 + i * 0.1, ease: 'easeOut' as const }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
               <motion.span
                 className="hero-star-interactive"
                 aria-hidden="true"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.5, type: 'spring', stiffness: 280, damping: 12 }}
                 whileHover={{ rotate: 180, scale: 1.4 }}
                 whileTap={{ scale: 0.85 }}
-                transition={{ type: 'spring', stiffness: 280, damping: 12 }}
               >
                 ✩
               </motion.span>
-            </motion.h1>
+            </h1>
             <motion.p className="hero-description" variants={heroItemVariants}>
               Translating complex systems into intuitive tactile digital crafts. I bridge thoughtful UX research, delightful frontend interactions, and tangible paper prototyping to deliver software people genuinely fall in love with.
             </motion.p>
