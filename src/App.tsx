@@ -1439,6 +1439,11 @@ function HomePage() {
 
 type TicTacToeMark = 'X' | 'O' | null;
 
+interface WinResult {
+  winner: TicTacToeMark;
+  line: number[];
+}
+
 const ticTacToeLines = [
   [0, 1, 2],
   [3, 4, 5],
@@ -1450,52 +1455,72 @@ const ticTacToeLines = [
   [2, 4, 6],
 ];
 
-function getTicTacToeWinner(board: TicTacToeMark[]) {
-  for (const [a, b, c] of ticTacToeLines) {
+function getTicTacToeWinner(board: TicTacToeMark[]): WinResult | null {
+  for (const line of ticTacToeLines) {
+    const [a, b, c] = line;
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a];
+      return { winner: board[a], line };
     }
   }
   return null;
 }
 
 function isTicTacToeTie(board: TicTacToeMark[]) {
-  return board.every(Boolean) && !getTicTacToeWinner(board);
+  return board.every((cell) => cell !== null) && !getTicTacToeWinner(board);
 }
 
-function minimax(board: TicTacToeMark[], maximizing: boolean): number {
-  const winner = getTicTacToeWinner(board);
-  if (winner === 'O') return 10;
-  if (winner === 'X') return -10;
+function minimax(board: TicTacToeMark[], depth: number, isMaximizing: boolean): number {
+  const winInfo = getTicTacToeWinner(board);
+  if (winInfo?.winner === 'O') return 10 - depth;
+  if (winInfo?.winner === 'X') return depth - 10;
   if (isTicTacToeTie(board)) return 0;
 
-  const scores = board
-    .map((mark, index) => {
-      if (mark) return null;
-      const next = [...board];
-      next[index] = maximizing ? 'O' : 'X';
-      const score = minimax(next, !maximizing);
-      return maximizing ? score - 1 : score + 1;
-    })
-    .filter((score): score is number => score !== null);
-
-  return maximizing ? Math.max(...scores) : Math.min(...scores);
+  if (isMaximizing) {
+    let best = -Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === null) {
+        board[i] = 'O';
+        best = Math.max(best, minimax(board, depth + 1, false));
+        board[i] = null;
+      }
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === null) {
+        board[i] = 'X';
+        best = Math.min(best, minimax(board, depth + 1, true));
+        board[i] = null;
+      }
+    }
+    return best;
+  }
 }
 
-function findPaperAiMove(board: TicTacToeMark[]) {
+function findPaperAiMove(currentBoard: TicTacToeMark[]): number {
+  const boardCopy = [...currentBoard];
   let bestScore = -Infinity;
   let bestMove = -1;
+  const availableMoves: number[] = [];
 
-  board.forEach((mark, index) => {
-    if (mark) return;
-    const next = [...board];
-    next[index] = 'O';
-    const score = minimax(next, false);
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = index;
+  for (let i = 0; i < 9; i++) {
+    if (boardCopy[i] === null) {
+      availableMoves.push(i);
+      boardCopy[i] = 'O';
+      const score = minimax(boardCopy, 0, false);
+      boardCopy[i] = null;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
     }
-  });
+  }
+
+  if (bestMove === -1 && availableMoves.length > 0) {
+    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  }
 
   return bestMove;
 }
@@ -1504,6 +1529,7 @@ function GamesPage() {
   const [board, setBoard] = useState<TicTacToeMark[]>(Array(9).fill(null));
   const [aiThinking, setAiThinking] = useState(false);
   const [roundResult, setRoundResult] = useState<string | null>(null);
+  const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [score, setScore] = useState({ X: 0, O: 0, ties: 0 });
 
   const heroContainerVariants = {
@@ -1523,57 +1549,68 @@ function GamesPage() {
     },
   };
 
-  function finishRound(nextBoard: TicTacToeMark[]) {
-    const winner = getTicTacToeWinner(nextBoard);
-    if (winner) {
-      setRoundResult(`${winner === 'X' ? 'You win' : 'Paper AI wins'}!`);
-      setScore((current) => ({ ...current, [winner]: current[winner] + 1 }));
+  function checkGameStatus(nextBoard: TicTacToeMark[]) {
+    const winInfo = getTicTacToeWinner(nextBoard);
+    if (winInfo) {
+      setWinningLine(winInfo.line);
+      setRoundResult(`${winInfo.winner === 'X' ? 'You win' : 'Paper AI wins'}!`);
+      setScore((prev) => ({
+        ...prev,
+        [winInfo.winner!]: prev[winInfo.winner!] + 1,
+      }));
+      setAiThinking(false);
       return true;
     }
     if (isTicTacToeTie(nextBoard)) {
+      setWinningLine(null);
       setRoundResult('A tidy little tie.');
-      setScore((current) => ({ ...current, ties: current.ties + 1 }));
+      setScore((prev) => ({ ...prev, ties: prev.ties + 1 }));
+      setAiThinking(false);
       return true;
     }
     return false;
   }
 
   function markSquare(index: number) {
-    if (aiThinking || roundResult || board[index]) return;
+    if (aiThinking || roundResult || board[index] !== null) return;
 
     const nextBoard = [...board];
     nextBoard[index] = 'X';
     setBoard(nextBoard);
 
-    if (!finishRound(nextBoard)) {
+    const isFinished = checkGameStatus(nextBoard);
+    if (!isFinished) {
       setAiThinking(true);
     }
   }
 
   useEffect(() => {
-    if (!aiThinking) return;
+    if (!aiThinking || roundResult) return;
 
     const aiTimer = window.setTimeout(() => {
-      const move = findPaperAiMove(board);
-      if (move === -1) {
-        setAiThinking(false);
-        return;
-      }
+      setBoard((currentBoard) => {
+        const move = findPaperAiMove(currentBoard);
+        if (move === -1) {
+          setAiThinking(false);
+          return currentBoard;
+        }
 
-      const nextBoard = [...board];
-      nextBoard[move] = 'O';
-      setBoard(nextBoard);
-      setAiThinking(false);
-      finishRound(nextBoard);
-    }, 420);
+        const nextBoard = [...currentBoard];
+        nextBoard[move] = 'O';
+        checkGameStatus(nextBoard);
+        setAiThinking(false);
+        return nextBoard;
+      });
+    }, 450);
 
     return () => window.clearTimeout(aiTimer);
-  }, [aiThinking, board]);
+  }, [aiThinking, roundResult]);
 
   function eraseBoard() {
     setBoard(Array(9).fill(null));
     setAiThinking(false);
     setRoundResult(null);
+    setWinningLine(null);
   }
 
   return (
@@ -1638,7 +1675,7 @@ function GamesPage() {
         </div>
 
         <div className="games-layout">
-          <Interactive3DBox className="game-board-card ink-border shadow-note" maxTilt={6} depth={16}>
+          <div className="game-board-card ink-border shadow-note" style={{ position: 'relative' }}>
             <h2 className="handwritten">Ink Duel • Tic-Tac-Toe (X&apos;s &amp; O&apos;s)</h2>
             <p className="typewriter muted-copy">Blue Ballpoint vs Crimson Pencil margin classic.</p>
             <div className="game-controls typewriter">
@@ -1654,30 +1691,45 @@ function GamesPage() {
                 <Eraser aria-hidden="true" /> Erase Board
               </motion.button>
             </div>
-            <div className="typewriter game-turn">
+            <div className="typewriter game-turn" style={{ minHeight: '20px' }}>
               {roundResult ?? (aiThinking ? 'Paper AI is thinking…' : 'Your turn (Player X)!')}
             </div>
             <div className="typewriter game-score">
               X Wins: {score.X} | O Wins: {score.O} | Ties: {score.ties}
             </div>
             <div className="tic-tac-toe">
-              {board.map((mark, index) => (
-                <motion.button
-                  key={index}
-                  type="button"
-                  onClick={() => markSquare(index)}
-                  aria-label={`Square ${index + 1}`}
-                  whileHover={{ scale: 1.06, backgroundColor: 'var(--note-surface-soft)' }}
-                  whileTap={{ scale: 0.92 }}
-                >
-                  <span className={mark === 'O' ? 'red-mark' : ''}>{mark}</span>
-                </motion.button>
-              ))}
+              {board.map((mark, index) => {
+                const isWinningSquare = winningLine?.includes(index);
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`tic-tac-toe-square${isWinningSquare ? ' winning-square' : ''}`}
+                    onClick={() => markSquare(index)}
+                    disabled={aiThinking || roundResult !== null || mark !== null}
+                    aria-label={`Square ${index + 1}`}
+                  >
+                    <AnimatePresence mode="wait">
+                      {mark && (
+                        <motion.span
+                          key={mark}
+                          className={mark === 'O' ? 'red-mark' : ''}
+                          initial={{ scale: 0, rotate: -20 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: 'spring', stiffness: 450, damping: 18 }}
+                        >
+                          {mark}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                );
+              })}
             </div>
             <div className="typewriter board-tip">
               X: Ballpoint Ink • O: Red Pencil Sketch — Tip: The paper AI never sleeps in math class.
             </div>
-          </Interactive3DBox>
+          </div>
 
           <aside className="game-aside" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Interactive3DBox className="game-note yellow-note ink-border shadow-note" maxTilt={10} depth={16}>
