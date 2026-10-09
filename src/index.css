@@ -3498,25 +3498,47 @@ html.lenis, html.lenis body {
 .dark .previous-card,
 .dark .quote-card,
 .dark .shelf-category,
-.dark .reading-stats {
-  background: var(--note-surface);
-  color: var(--note-ink);
-  border-color: var(--note-ink);
+.dark .reading-stats,
+.dark .reading-card,
+.dark .finished-card,
+.dark .to-read,
+.dark .lending-policy,
+.dark .note-card {
+  background: var(--note-surface) !important;
+  color: #ffffff !important;
+  border-color: var(--note-ink) !important;
+}
+
+.dark .project-card:nth-child(2n),
+.dark .toolkit-card:nth-child(3n),
+.dark .finished-card:nth-child(3n),
+.dark .previous-card:nth-child(2n),
+.dark .draft-card:nth-child(2n) {
+  --sticky-paper: #222d32;
+  background: #222d32 !important;
+}
+
+.dark .project-card:nth-child(3n),
+.dark .toolkit-card:nth-child(4n),
+.dark .finished-card:nth-child(4n),
+.dark .draft-card:nth-child(3n) {
+  --sticky-paper: #272d34;
+  background: #272d34 !important;
 }
 
 .dark .cream-note {
-  background: #25333a;
-  border-color: var(--note-ink);
+  background: #25333a !important;
+  border-color: var(--note-ink) !important;
 }
 
 .dark .yellow-note {
-  background: #2d383e;
-  border-color: var(--note-ink);
+  background: #2d383e !important;
+  border-color: var(--note-ink) !important;
 }
 
 .dark .peach-note {
-  background: #362925;
-  border-color: var(--note-ink);
+  background: #362925 !important;
+  border-color: var(--note-ink) !important;
 }
 
 .dark .yellow-note .note-kicker,
@@ -3524,8 +3546,33 @@ html.lenis, html.lenis body {
 .dark .peach-note .note-kicker,
 .dark .peach-note p,
 .dark .game-note .note-kicker,
-.dark .game-note p {
-  color: var(--note-ink);
+.dark .game-note p,
+.dark .finished-card h3,
+.dark .finished-card p,
+.dark .finished-card > span,
+.dark .to-read,
+.dark .to-read li,
+.dark .to-read label,
+.dark .to-read span,
+.dark .to-read .note-kicker,
+.dark .to-read .section-kicker,
+.dark .quote-card p,
+.dark .quote-card span,
+.dark .sprint-card h3,
+.dark .sprint-card p,
+.dark .sprint-card .timer,
+.dark .project-card h3,
+.dark .project-card p,
+.dark .toolkit-card h3,
+.dark .toolkit-card p,
+.dark .current-school h3,
+.dark .current-school p,
+.dark .specialization-card h3,
+.dark .specialization-card p,
+.dark .reading-stats,
+.dark .lending-policy,
+.dark .note-card p {
+  color: #ffffff !important;
 }
 
 .dark .note-card span:last-child,
@@ -3534,7 +3581,7 @@ html.lenis, html.lenis body {
 .dark .board-tip,
 .dark .section-subtitle,
 .dark .eyebrow {
-  color: var(--note-muted);
+  color: var(--note-muted) !important;
 }
 
 .dark .filter-chip {
