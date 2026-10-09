@@ -9,7 +9,7 @@
 }
 
 :root {
-  --note-ink: #1e201b;
+  --note-ink: #050604;
   --note-rule: #cbd8e2;
   --note-margin: #d99e97;
   --note-cream: #f4f0e6;
@@ -17,26 +17,26 @@
   --note-blue: #dcecf0;
   --note-surface: #fffdf7;
   --note-surface-soft: #eee8da;
-  --note-muted: #575950;
+  --note-muted: #24261f;
   --note-accent: #b43b35;
-  --note-shadow: rgb(37 38 33 / 14%);
+  --note-shadow: rgb(5 6 4 / 16%);
   --font-hand: 'Falaq Sans', 'Caveat', cursive;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .dark {
-  --note-ink: #eee7d8;
-  --note-rule: #344852;
-  --note-margin: #754f57;
-  --note-cream: #182126;
+  --note-ink: #ffffff;
+  --note-rule: #384f5a;
+  --note-margin: #8c5d67;
+  --note-cream: #141b1f;
   --note-yellow: #b99843;
   --note-blue: #203943;
-  --note-surface: #202c31;
-  --note-surface-soft: #29383d;
-  --note-muted: #aeb8b4;
-  --note-accent: #ef8275;
-  --note-shadow: rgb(0 0 0 / 34%);
+  --note-surface: #1d272c;
+  --note-surface-soft: #27343b;
+  --note-muted: #e2e8f0;
+  --note-accent: #f87171;
+  --note-shadow: rgb(0 0 0 / 40%);
 }
 
 *,
@@ -315,8 +315,9 @@ a:focus-visible {
 
 .eyebrow {
   margin: 0;
-  color: rgb(26 26 26 / 60%);
+  color: var(--note-muted);
   font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -936,8 +937,9 @@ a:focus-visible {
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  color: rgb(26 26 26 / 70%);
+  color: var(--note-ink);
   font-size: 23px;
+  font-weight: 600;
 }
 
 .home-aside svg {
@@ -996,8 +998,9 @@ a:focus-visible {
 }
 
 .note-card span:last-child {
-  color: rgb(26 26 26 / 60%);
+  color: var(--note-muted);
   font-size: 11px;
+  font-weight: 600;
 }
 
 .home-section {
@@ -1018,8 +1021,9 @@ a:focus-visible {
 
 .section-subtitle {
   margin: -8px 0 22px;
-  color: rgb(26 26 26 / 60%);
+  color: var(--note-muted);
   font-size: 26px;
+  font-weight: 600;
 }
 
 .filter-row,
@@ -1376,8 +1380,9 @@ a:focus-visible {
 .muted-copy,
 .game-score,
 .board-tip {
-  color: rgb(26 26 26 / 70%);
-  font-size: 10px;
+  color: var(--note-muted);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .muted-copy {
@@ -2176,8 +2181,9 @@ a:focus-visible {
 }
 
 .draft-card .draft-kicker {
-  color: rgb(26 26 26 / 60%);
-  font-size: 10px;
+  color: var(--note-muted);
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -2429,14 +2435,15 @@ a:focus-visible {
 
 .finished-card p {
   margin: 0 0 10px;
-  color: rgb(26 26 26 / 75%);
-  font-size: 12px;
-  line-height: 1.35;
+  color: var(--note-ink);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .finished-card > span {
-  color: rgb(26 26 26 / 50%);
-  font-size: 10px;
+  color: var(--note-muted);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -2493,8 +2500,9 @@ a:focus-visible {
 
 .sprint-card p {
   margin: 0 0 10px;
-  color: rgb(26 26 26 / 60%);
-  font-size: 10px;
+  color: var(--note-muted);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
