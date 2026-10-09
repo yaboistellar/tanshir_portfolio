@@ -453,10 +453,11 @@ a:focus-visible {
 
 .previous-title {
   margin: 0 0 12px;
-  color: rgb(26 26 26 / 70%);
+  color: var(--note-ink);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .previous-grid {
@@ -473,22 +474,26 @@ a:focus-visible {
 }
 
 .previous-card h4 {
-  margin: 0 0 2px;
-  font-size: 23px;
+  margin: 0 0 4px;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.15;
+  color: var(--note-ink);
 }
 
 .previous-card p {
   margin: 0;
-  color: rgb(26 26 26 / 60%);
-  font-size: 10px;
-  line-height: 1.45;
+  color: var(--note-ink);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
 }
 
 .previous-card p:last-child {
-  color: rgb(26 26 26 / 50%);
+  opacity: 0.75;
 }
 
 .milestone {
@@ -500,30 +505,32 @@ a:focus-visible {
 
 .milestone-kicker {
   margin: 0 0 8px;
-  color: #1e40af;
+  color: #1d4ed8;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .milestone h3 {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   color: var(--note-ink);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .milestone-target {
   margin: 0 0 12px;
-  color: #1e40af;
-  font-size: 10px;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .milestone-copy {
   margin: 0 0 12px;
-  color: rgb(26 26 26 / 80%);
+  color: var(--note-ink);
   font-size: 14px;
   line-height: 1.625;
 }
@@ -531,10 +538,10 @@ a:focus-visible {
 .milestone-note {
   border-top: 2px dashed rgb(29 78 216 / 40%);
   padding-top: 8px;
-  color: #1e3a8a;
-  font-size: 22px;
-  font-style: italic;
-  line-height: 1.15;
+  color: #1d4ed8;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .specializations {
@@ -3562,12 +3569,25 @@ html.lenis, html.lenis body {
 .dark .toolkit-card p,
 .dark .current-school h3,
 .dark .current-school p,
+.dark .previous-card h4,
+.dark .previous-card p,
+.dark .previous-title,
+.dark .milestone h3,
+.dark .milestone p,
+.dark .milestone-kicker,
+.dark .milestone-target,
+.dark .milestone-note,
 .dark .specialization-card h3,
 .dark .specialization-card p,
 .dark .reading-stats,
 .dark .lending-policy,
 .dark .note-card p {
   color: #ffffff !important;
+}
+
+.dark .previous-card p {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
 }
 
 .dark .note-card span:last-child,
