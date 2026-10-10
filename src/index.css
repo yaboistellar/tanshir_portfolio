@@ -3507,10 +3507,21 @@ html.lenis, html.lenis body {
 .dark .to-read,
 .dark .lending-policy,
 .dark .note-card,
-.dark .milestone {
+.dark .milestone,
+.dark .desk-stats,
+.dark .always-learning {
   background: var(--note-surface) !important;
   color: #ffffff !important;
   border-color: var(--note-ink) !important;
+}
+
+.dark .desk-stats > span {
+  color: #94a3b8 !important;
+  border-top-color: rgb(255 255 255 / 20%) !important;
+}
+
+.dark .always-learning .learning-detail {
+  color: #94a3b8 !important;
 }
 
 .dark .milestone {
