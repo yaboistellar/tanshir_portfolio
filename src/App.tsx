@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import Lenis from 'lenis';
 import * as THREE from 'three';
@@ -2916,6 +2917,131 @@ function MinecraftVoxelGame() {
     }
   }, [timeOfDay]);
 
+  const arenaContent = (
+    <div className={`voxel-arena-wrapper time-${timeOfDay}${isFullscreen ? ' voxel-arena-fullscreen' : ''}`}>
+      <div ref={mountRef} className="voxel-canvas-mount" />
+      <div className="voxel-crosshair" aria-hidden="true" />
+
+      {/* Exit fullscreen floating button */}
+      {isFullscreen && (
+        <button
+          type="button"
+          className="voxel-exit-fullscreen typewriter"
+          onClick={() => setIsFullscreen(false)}
+        >
+          <Minimize2 style={{ width: 14, height: 14 }} /> Exit Fullscreen (Esc)
+        </button>
+      )}
+
+      <div className="voxel-hud-top">
+        <div className="voxel-hud-pill">
+          🎮 Drag: Orbit • Wheel/Pinch: Zoom • Click: {mode === 'mine' ? 'Mine' : mode === 'tnt' ? 'Detonate' : 'Place'} • Keys 1-9
+        </div>
+        <div className="voxel-hud-actions">
+          <button
+            type="button"
+            className="voxel-zoom-btn"
+            onClick={() => zoomControlRef.current?.(-3)}
+            title="Zoom In"
+          >
+            <ZoomIn style={{ width: 13, height: 13 }} />
+          </button>
+          <button
+            type="button"
+            className="voxel-zoom-btn"
+            onClick={() => zoomControlRef.current?.(3)}
+            title="Zoom Out"
+          >
+            <ZoomOut style={{ width: 13, height: 13 }} />
+          </button>
+          <button
+            type="button"
+            className="voxel-zoom-btn"
+            onClick={() => setIsFullscreen((f) => !f)}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen Mode'}
+          >
+            {isFullscreen ? <Minimize2 style={{ width: 13, height: 13 }} /> : <Maximize2 style={{ width: 13, height: 13 }} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Control Dock: Always visible in normal & fullscreen */}
+      <div className="voxel-bottom-dock">
+        {/* Action Tools Row */}
+        <div className="voxel-toolbar-dock typewriter">
+          <button
+            type="button"
+            className={`voxel-dock-btn${mode === 'place' ? ' active' : ''}`}
+            onClick={() => setMode('place')}
+          >
+            <Box aria-hidden="true" style={{ width: 12, height: 12 }} /> Build (Place)
+          </button>
+          <button
+            type="button"
+            className={`voxel-dock-btn${mode === 'mine' ? ' active' : ''}`}
+            onClick={() => setMode('mine')}
+          >
+            <Hammer aria-hidden="true" style={{ width: 12, height: 12 }} /> Mine (Break)
+          </button>
+          <button
+            type="button"
+            className={`voxel-dock-btn${mode === 'tnt' ? ' active' : ''}`}
+            onClick={() => setMode('tnt')}
+          >
+            <Flame aria-hidden="true" style={{ width: 12, height: 12 }} /> Detonate TNT
+          </button>
+          <button
+            type="button"
+            className="voxel-dock-btn"
+            onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
+          >
+            🌳 Plant Tree
+          </button>
+          <button
+            type="button"
+            className="voxel-dock-btn"
+            onClick={() => setTimeOfDay((t) => (t === 'day' ? 'sunset' : t === 'sunset' ? 'night' : 'day'))}
+          >
+            {timeOfDay === 'day' ? '☀️ Day' : timeOfDay === 'sunset' ? '🌅 Sunset' : '🌙 Night'}
+          </button>
+          <button
+            type="button"
+            className="voxel-dock-btn"
+            onClick={generateIsland}
+          >
+            <RotateCcw aria-hidden="true" style={{ width: 12, height: 12 }} /> Reset Island
+          </button>
+          <button
+            type="button"
+            className="voxel-dock-btn"
+            onClick={generateFlat}
+          >
+            🧹 Flat World
+          </button>
+        </div>
+
+        {/* 9-Slot Minecraft Hotbar */}
+        <div className="voxel-hotbar">
+          {VOXEL_BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              type="button"
+              className={`voxel-hotbar-slot${selectedBlock === block.id && mode === 'place' ? ' selected' : ''}`}
+              onClick={() => {
+                setSelectedBlock(block.id);
+                setMode('place');
+              }}
+              title={`${block.name} (Key ${block.key})`}
+            >
+              <div className="voxel-block-preview" style={{ backgroundColor: block.previewColor }} />
+              <span className="voxel-slot-key">{block.key}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="voxel-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
@@ -2942,128 +3068,16 @@ function MinecraftVoxelGame() {
         </div>
       </div>
 
-      <div className={`voxel-arena-wrapper time-${timeOfDay}${isFullscreen ? ' voxel-arena-fullscreen' : ''}`}>
-        <div ref={mountRef} className="voxel-canvas-mount" />
-        <div className="voxel-crosshair" aria-hidden="true" />
-
-        {/* Exit fullscreen floating button */}
-        {isFullscreen && (
-          <button
-            type="button"
-            className="voxel-exit-fullscreen typewriter"
-            onClick={() => setIsFullscreen(false)}
-          >
-            <Minimize2 style={{ width: 14, height: 14 }} /> Exit Fullscreen (Esc)
-          </button>
-        )}
-
-        <div className="voxel-hud-top">
-          <div className="voxel-hud-pill">
-            🎮 Drag: Orbit • Wheel/Pinch: Zoom • Click: {mode === 'mine' ? 'Mine' : mode === 'tnt' ? 'Detonate' : 'Place'} • Keys 1-9
+      {isFullscreen ? (
+        <>
+          <div className="voxel-arena-placeholder typewriter">
+            🎮 Playing in Fullscreen Mode • Press [Esc] or click Exit Fullscreen in top right.
           </div>
-          <div className="voxel-hud-actions">
-            <button
-              type="button"
-              className="voxel-zoom-btn"
-              onClick={() => zoomControlRef.current?.(-3)}
-              title="Zoom In"
-            >
-              <ZoomIn style={{ width: 13, height: 13 }} />
-            </button>
-            <button
-              type="button"
-              className="voxel-zoom-btn"
-              onClick={() => zoomControlRef.current?.(3)}
-              title="Zoom Out"
-            >
-              <ZoomOut style={{ width: 13, height: 13 }} />
-            </button>
-            <button
-              type="button"
-              className="voxel-zoom-btn"
-              onClick={() => setIsFullscreen((f) => !f)}
-              title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen Mode'}
-            >
-              {isFullscreen ? <Minimize2 style={{ width: 13, height: 13 }} /> : <Maximize2 style={{ width: 13, height: 13 }} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom Control Dock: Always visible in normal & fullscreen */}
-        <div className="voxel-bottom-dock">
-          {/* Action Tools Row */}
-          <div className="voxel-toolbar-dock typewriter">
-            <button
-              type="button"
-              className={`voxel-dock-btn${mode === 'place' ? ' active' : ''}`}
-              onClick={() => setMode('place')}
-            >
-              <Box aria-hidden="true" style={{ width: 12, height: 12 }} /> Build (Place)
-            </button>
-            <button
-              type="button"
-              className={`voxel-dock-btn${mode === 'mine' ? ' active' : ''}`}
-              onClick={() => setMode('mine')}
-            >
-              <Hammer aria-hidden="true" style={{ width: 12, height: 12 }} /> Mine (Break)
-            </button>
-            <button
-              type="button"
-              className={`voxel-dock-btn${mode === 'tnt' ? ' active' : ''}`}
-              onClick={() => setMode('tnt')}
-            >
-              <Flame aria-hidden="true" style={{ width: 12, height: 12 }} /> Detonate TNT
-            </button>
-            <button
-              type="button"
-              className="voxel-dock-btn"
-              onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
-            >
-              🌳 Plant Tree
-            </button>
-            <button
-              type="button"
-              className="voxel-dock-btn"
-              onClick={() => setTimeOfDay((t) => (t === 'day' ? 'sunset' : t === 'sunset' ? 'night' : 'day'))}
-            >
-              {timeOfDay === 'day' ? '☀️ Day' : timeOfDay === 'sunset' ? '🌅 Sunset' : '🌙 Night'}
-            </button>
-            <button
-              type="button"
-              className="voxel-dock-btn"
-              onClick={generateIsland}
-            >
-              <RotateCcw aria-hidden="true" style={{ width: 12, height: 12 }} /> Reset Island
-            </button>
-            <button
-              type="button"
-              className="voxel-dock-btn"
-              onClick={generateFlat}
-            >
-              🧹 Flat World
-            </button>
-          </div>
-
-          {/* 9-Slot Minecraft Hotbar */}
-          <div className="voxel-hotbar">
-            {VOXEL_BLOCKS.map((block) => (
-              <button
-                key={block.id}
-                type="button"
-                className={`voxel-hotbar-slot${selectedBlock === block.id && mode === 'place' ? ' selected' : ''}`}
-                onClick={() => {
-                  setSelectedBlock(block.id);
-                  setMode('place');
-                }}
-                title={`${block.name} (Key ${block.key})`}
-              >
-                <div className="voxel-block-preview" style={{ backgroundColor: block.previewColor }} />
-                <span className="voxel-slot-key">{block.key}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+          {createPortal(arenaContent, document.body)}
+        </>
+      ) : (
+        arenaContent
+      )}
     </div>
   );
 }
