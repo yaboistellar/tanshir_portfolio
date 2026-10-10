@@ -3792,3 +3792,210 @@ html.lenis, html.lenis body {
 .dark .mobile-notice-banner span {
   color: #ffffff !important;
 }
+
+/* VoxelCraft 3D Mini-Game */
+.voxel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.voxel-arena-wrapper {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  border: 2px solid var(--note-ink);
+  border-radius: 2px;
+  overflow: hidden;
+  background: #bfdbfe;
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 12%);
+  user-select: none;
+  touch-action: none;
+}
+
+.voxel-arena-wrapper.time-sunset {
+  background: linear-gradient(to bottom, #fdba74 0%, #fed7aa 60%, #cbd5e1 100%);
+}
+
+.voxel-arena-wrapper.time-night {
+  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 80%, #334155 100%);
+}
+
+.voxel-arena-wrapper.time-day {
+  background: linear-gradient(to bottom, #7dd3fc 0%, #bae6fd 60%, #e0f2fe 100%);
+}
+
+.voxel-canvas-mount {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.voxel-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+}
+
+.voxel-crosshair::before,
+.voxel-crosshair::after {
+  content: '';
+  position: absolute;
+  background: #ffffff;
+  box-shadow: 0 0 2px #000000;
+}
+
+.voxel-crosshair::before {
+  width: 14px;
+  height: 2px;
+}
+
+.voxel-crosshair::after {
+  width: 2px;
+  height: 14px;
+}
+
+.voxel-hud-top {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+}
+
+.voxel-hud-pill {
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  padding: 4px 8px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  pointer-events: auto;
+}
+
+.voxel-hotbar {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  padding: 4px;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  z-index: 10;
+  max-width: 95%;
+  overflow-x: auto;
+}
+
+.voxel-hotbar-slot {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 2px solid #475569;
+  background: #1e293b;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.voxel-hotbar-slot:hover {
+  transform: translateY(-2px);
+  border-color: #94a3b8;
+}
+
+.voxel-hotbar-slot.selected {
+  border-color: #facc15;
+  box-shadow: 0 0 6px #facc15;
+  transform: scale(1.08);
+}
+
+.voxel-block-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 1px;
+  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.35), inset 2px 2px 0 rgba(255, 255, 255, 0.35);
+}
+
+.voxel-slot-key {
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: #cbd5e1;
+  text-shadow: 0 1px 1px #000;
+}
+
+.voxel-toolbar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.voxel-mode-group {
+  display: flex;
+  gap: 4px;
+}
+
+.voxel-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.voxel-mode-btn.active {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}
+
+.voxel-mode-btn:hover:not(.active) {
+  background: var(--note-surface-soft);
+}
+
+.dark .voxel-mode-btn {
+  background: var(--note-surface);
+  color: #ffffff;
+  border-color: var(--note-ink);
+}
+
+.dark .voxel-mode-btn.active {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}

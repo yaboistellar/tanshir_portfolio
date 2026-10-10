@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Award,
   BookOpen,
+  Box,
   Brush,
   Check,
   ChevronDown,
@@ -19,9 +20,11 @@ import {
   Gamepad2,
   Github,
   GraduationCap,
+  Hammer,
   HelpCircle,
   Hourglass,
   Instagram,
+  Layers,
   Linkedin,
   Lock,
   Menu,
@@ -2290,6 +2293,706 @@ function SnakeGame() {
   );
 }
 
+type VoxelBlockType = 'grass' | 'dirt' | 'stone' | 'wood' | 'leaves' | 'brick' | 'glass' | 'gold' | 'tnt';
+
+interface VoxelData {
+  type: VoxelBlockType;
+  mesh: THREE.Mesh;
+  edges: THREE.LineSegments;
+  pos: [number, number, number];
+}
+
+const VOXEL_BLOCKS: Array<{
+  id: VoxelBlockType;
+  name: string;
+  key: string;
+  previewColor: string;
+  topColor: number;
+  sideColor: number;
+  bottomColor: number;
+  transparent?: boolean;
+  opacity?: number;
+}> = [
+  { id: 'grass', name: 'Grass', key: '1', previewColor: '#4ade80', topColor: 0x56a644, sideColor: 0x866043, bottomColor: 0x866043 },
+  { id: 'dirt', name: 'Dirt', key: '2', previewColor: '#92400e', topColor: 0x866043, sideColor: 0x866043, bottomColor: 0x866043 },
+  { id: 'stone', name: 'Stone', key: '3', previewColor: '#64748b', topColor: 0x7b838a, sideColor: 0x7b838a, bottomColor: 0x7b838a },
+  { id: 'wood', name: 'Oak Log', key: '4', previewColor: '#b45309', topColor: 0xc4975e, sideColor: 0x6b4423, bottomColor: 0xc4975e },
+  { id: 'leaves', name: 'Leaves', key: '5', previewColor: '#16a34a', topColor: 0x3b8526, sideColor: 0x3b8526, bottomColor: 0x3b8526 },
+  { id: 'brick', name: 'Brick', key: '6', previewColor: '#dc2626', topColor: 0x9b3b30, sideColor: 0x9b3b30, bottomColor: 0x9b3b30 },
+  { id: 'glass', name: 'Glass', key: '7', previewColor: '#38bdf8', topColor: 0x7dd3fc, sideColor: 0x7dd3fc, bottomColor: 0x7dd3fc, transparent: true, opacity: 0.55 },
+  { id: 'gold', name: 'Gold Ore', key: '8', previewColor: '#facc15', topColor: 0xfacc15, sideColor: 0x85734e, bottomColor: 0x85734e },
+  { id: 'tnt', name: 'TNT', key: '9', previewColor: '#ef4444', topColor: 0xcc3333, sideColor: 0xd94436, bottomColor: 0xcc3333 },
+];
+
+function playVoxelSynth(type: 'dig' | 'place' | 'explode') {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+
+    if (type === 'dig') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.08);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === 'place') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(280, now + 0.06);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    } else if (type === 'explode') {
+      const bufferSize = ctx.sampleRate * 0.45;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.12));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(750, now);
+      filter.frequency.linearRampToValueAtTime(60, now + 0.45);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start(now);
+    }
+  } catch {
+    // Audio context suppressed or blocked
+  }
+}
+
+function MinecraftVoxelGame() {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const [selectedBlock, setSelectedBlock] = useState<VoxelBlockType>('grass');
+  const [mode, setMode] = useState<'mine' | 'place' | 'tnt'>('place');
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
+  const [minedCount, setMinedCount] = useState(0);
+  const [placedCount, setPlacedCount] = useState(0);
+  const [blockCount, setBlockCount] = useState(0);
+
+  const voxelsRef = useRef<Map<string, VoxelData>>(new Map());
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const worldGroupRef = useRef<THREE.Group | null>(null);
+  const highlightMeshRef = useRef<THREE.LineSegments | null>(null);
+  const particlesRef = useRef<Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; life: number }>>([]);
+  const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
+  const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
+
+  // Voxel key helper
+  const getKey = (x: number, y: number, z: number) => `${Math.round(x)},${Math.round(y)},${Math.round(z)}`;
+
+  // Create voxel mesh
+  const createVoxelMesh = useCallback((type: VoxelBlockType, x: number, y: number, z: number) => {
+    const blockDef = VOXEL_BLOCKS.find((b) => b.id === type) || VOXEL_BLOCKS[0];
+    const geom = new THREE.BoxGeometry(1, 1, 1);
+
+    // Multi-face materials for voxel styling
+    const materials = [
+      new THREE.MeshLambertMaterial({ color: blockDef.sideColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+      new THREE.MeshLambertMaterial({ color: blockDef.sideColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+      new THREE.MeshLambertMaterial({ color: blockDef.topColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+      new THREE.MeshLambertMaterial({ color: blockDef.bottomColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+      new THREE.MeshLambertMaterial({ color: blockDef.sideColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+      new THREE.MeshLambertMaterial({ color: blockDef.sideColor, transparent: !!blockDef.transparent, opacity: blockDef.opacity ?? 1 }),
+    ];
+
+    const mesh = new THREE.Mesh(geom, materials);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData = { isVoxel: true, voxelType: type, voxelPos: [x, y, z] };
+
+    // Black ink block edges
+    const edgesGeom = new THREE.EdgesGeometry(geom);
+    const edgesMat = new THREE.LineBasicMaterial({
+      color: 0x111827,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const edges = new THREE.LineSegments(edgesGeom, edgesMat);
+    mesh.add(edges);
+
+    return { mesh, edges, type, pos: [x, y, z] as [number, number, number] };
+  }, []);
+
+  // Spawn break debris particles
+  const spawnDebris = useCallback((x: number, y: number, z: number, color: number) => {
+    if (!sceneRef.current) return;
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+      const pGeom = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+      const pMat = new THREE.MeshBasicMaterial({ color });
+      const pMesh = new THREE.Mesh(pGeom, pMat);
+      pMesh.position.set(
+        x + (Math.random() - 0.5) * 0.6,
+        y + (Math.random() - 0.5) * 0.6,
+        z + (Math.random() - 0.5) * 0.6
+      );
+      sceneRef.current.add(pMesh);
+      particlesRef.current.push({
+        mesh: pMesh,
+        vel: new THREE.Vector3(
+          (Math.random() - 0.5) * 4.5,
+          Math.random() * 4 + 1.5,
+          (Math.random() - 0.5) * 4.5
+        ),
+        life: 1.0,
+      });
+    }
+  }, []);
+
+  // Place block action
+  const addBlock = useCallback((type: VoxelBlockType, x: number, y: number, z: number, playAudio = true) => {
+    const key = getKey(x, y, z);
+    if (voxelsRef.current.has(key)) return;
+    if (!worldGroupRef.current) return;
+
+    const voxel = createVoxelMesh(type, x, y, z);
+    worldGroupRef.current.add(voxel.mesh);
+    voxelsRef.current.set(key, voxel);
+    setBlockCount(voxelsRef.current.size);
+
+    if (playAudio) {
+      playVoxelSynth('place');
+      setPlacedCount((c) => c + 1);
+    }
+  }, [createVoxelMesh]);
+
+  // Remove block action
+  const removeBlock = useCallback((x: number, y: number, z: number, playAudio = true) => {
+    const key = getKey(x, y, z);
+    const voxel = voxelsRef.current.get(key);
+    if (!voxel || !worldGroupRef.current || !sceneRef.current) return;
+
+    const blockDef = VOXEL_BLOCKS.find((b) => b.id === voxel.type);
+    spawnDebris(x, y, z, blockDef?.topColor ?? 0x55aa44);
+
+    worldGroupRef.current.remove(voxel.mesh);
+    voxel.mesh.geometry.dispose();
+    if (Array.isArray(voxel.mesh.material)) {
+      voxel.mesh.material.forEach((m) => m.dispose());
+    } else {
+      voxel.mesh.material.dispose();
+    }
+    voxelsRef.current.delete(key);
+    setBlockCount(voxelsRef.current.size);
+
+    if (playAudio) {
+      playVoxelSynth('dig');
+      setMinedCount((c) => c + 1);
+    }
+  }, [spawnDebris]);
+
+  // Explode TNT action
+  const explodeAt = useCallback((centerX: number, centerY: number, centerZ: number) => {
+    playVoxelSynth('explode');
+    const radius = 2.5;
+    const toRemove: [number, number, number][] = [];
+
+    voxelsRef.current.forEach((voxel) => {
+      const [vx, vy, vz] = voxel.pos;
+      const dist = Math.sqrt((vx - centerX) ** 2 + (vy - centerY) ** 2 + (vz - centerZ) ** 2);
+      if (dist <= radius) {
+        toRemove.push([vx, vy, vz]);
+      }
+    });
+
+    toRemove.forEach(([rx, ry, rz]) => {
+      removeBlock(rx, ry, rz, false);
+    });
+
+    // Big fiery flash explosion
+    if (sceneRef.current) {
+      for (let i = 0; i < 24; i++) {
+        const pGeom = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+        const pMat = new THREE.MeshBasicMaterial({
+          color: Math.random() > 0.4 ? 0xef4444 : 0xfacc15,
+        });
+        const pMesh = new THREE.Mesh(pGeom, pMat);
+        pMesh.position.set(centerX, centerY, centerZ);
+        sceneRef.current.add(pMesh);
+        particlesRef.current.push({
+          mesh: pMesh,
+          vel: new THREE.Vector3(
+            (Math.random() - 0.5) * 8,
+            Math.random() * 6 + 2,
+            (Math.random() - 0.5) * 8
+          ),
+          life: 1.2,
+        });
+      }
+    }
+  }, [removeBlock]);
+
+  // Clear all voxels
+  const clearWorld = useCallback(() => {
+    if (!worldGroupRef.current) return;
+    voxelsRef.current.forEach((voxel) => {
+      worldGroupRef.current?.remove(voxel.mesh);
+      voxel.mesh.geometry.dispose();
+    });
+    voxelsRef.current.clear();
+    setBlockCount(0);
+  }, []);
+
+  // Plant a tree preset
+  const plantTree = useCallback((baseX: number, baseY: number, baseZ: number) => {
+    // Trunk
+    for (let dy = 0; dy < 4; dy++) {
+      addBlock('wood', baseX, baseY + dy, baseZ, false);
+    }
+    // Leaves crown
+    for (let lx = -2; lx <= 2; lx++) {
+      for (let lz = -2; lz <= 2; lz++) {
+        for (let ly = 2; ly <= 4; ly++) {
+          if (Math.abs(lx) === 2 && Math.abs(lz) === 2 && ly === 4) continue;
+          if (lx === 0 && lz === 0 && ly <= 3) continue;
+          addBlock('leaves', baseX + lx, baseY + ly, baseZ + lz, false);
+        }
+      }
+    }
+    addBlock('leaves', baseX, baseY + 5, baseZ, false);
+  }, [addBlock]);
+
+  // Generate Default Island
+  const generateIsland = useCallback(() => {
+    clearWorld();
+    const size = 10;
+    const half = Math.floor(size / 2);
+
+    for (let x = -half; x <= half; x++) {
+      for (let z = -half; z <= half; z++) {
+        const distFromCenter = Math.sqrt(x * x + z * z);
+        if (distFromCenter > half + 0.5) continue;
+
+        // Elevation formula
+        let height = Math.floor(Math.sin(x * 0.4) * Math.cos(z * 0.4) * 1.5 + 1.2);
+        if (x === 0 && z === 0) height = 0; // Mini center pond
+
+        // Stone bedrock layer
+        addBlock('stone', x, -2, z, false);
+        addBlock('stone', x, -1, z, false);
+
+        // Dirt layers
+        for (let y = 0; y < height; y++) {
+          addBlock('dirt', x, y, z, false);
+        }
+
+        // Top layer (Grass or Gold ore secret)
+        if (x === 2 && z === -2) {
+          addBlock('gold', x, height, z, false);
+        } else {
+          addBlock('grass', x, height, z, false);
+        }
+      }
+    }
+
+    // Plant an oak tree on the island hill
+    plantTree(2, 3, 2);
+
+    // Brick campfire / structure corner
+    addBlock('brick', -2, 2, -2, false);
+    addBlock('brick', -2, 3, -2, false);
+    addBlock('tnt', -3, 2, 2, false);
+  }, [clearWorld, addBlock, plantTree]);
+
+  // Generate Flat World
+  const generateFlat = useCallback(() => {
+    clearWorld();
+    for (let x = -4; x <= 4; x++) {
+      for (let z = -4; z <= 4; z++) {
+        addBlock('stone', x, -1, z, false);
+        addBlock('grass', x, 0, z, false);
+      }
+    }
+  }, [clearWorld, addBlock]);
+
+  // Main Three.js setup effect
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    let width = container.clientWidth || 600;
+    let height = container.clientHeight || 420;
+
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(12, 14, 16);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.75);
+    scene.add(hemiLight);
+    hemiLightRef.current = hemiLight;
+
+    const dirLight = new THREE.DirectionalLight(0xfffaed, 0.95);
+    dirLight.position.set(18, 26, 12);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+    dirLightRef.current = dirLight;
+
+    // World group
+    const worldGroup = new THREE.Group();
+    scene.add(worldGroup);
+    worldGroupRef.current = worldGroup;
+
+    // Highlight wireframe box
+    const highlightGeom = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.02, 1.02, 1.02));
+    const highlightMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+    const highlightMesh = new THREE.LineSegments(highlightGeom, highlightMat);
+    highlightMesh.visible = false;
+    scene.add(highlightMesh);
+    highlightMeshRef.current = highlightMesh;
+
+    // Grid Floor
+    const grid = new THREE.GridHelper(24, 24, 0x000000, 0x000000);
+    (grid.material as THREE.Material).transparent = true;
+    (grid.material as THREE.Material).opacity = 0.12;
+    grid.position.y = -2.51;
+    scene.add(grid);
+
+    // Orbit Camera spherical state
+    const target = new THREE.Vector3(0, 1.5, 0);
+    let radius = 22;
+    let theta = Math.PI / 4;
+    let phi = Math.PI / 3.2;
+
+    const updateCamera = () => {
+      phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, phi));
+      radius = Math.max(6, Math.min(45, radius));
+      camera.position.x = target.x + radius * Math.sin(phi) * Math.sin(theta);
+      camera.position.y = target.y + radius * Math.cos(phi);
+      camera.position.z = target.z + radius * Math.sin(phi) * Math.cos(theta);
+      camera.lookAt(target);
+    };
+    updateCamera();
+
+    // Mouse / Touch interaction handlers
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let hasMoved = false;
+
+    const getRaycastHits = (clientX: number, clientY: number) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const voxelMeshes: THREE.Mesh[] = [];
+      voxelsRef.current.forEach((v) => voxelMeshes.push(v.mesh));
+      return raycaster.intersectObjects(voxelMeshes, false);
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      isDragging = true;
+      hasMoved = false;
+      dragStart = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (isDragging) {
+        const dx = e.clientX - dragStart.x;
+        const dy = e.clientY - dragStart.y;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          hasMoved = true;
+          theta -= dx * 0.007;
+          phi -= dy * 0.007;
+          updateCamera();
+          dragStart = { x: e.clientX, y: e.clientY };
+        }
+      }
+
+      // Hover Raycast for block highlight
+      const hits = getRaycastHits(e.clientX, e.clientY);
+      const hit = hits[0];
+      if (hit && hit.face) {
+        const hitMesh = hit.object as THREE.Mesh;
+        const [hx, hy, hz] = hitMesh.userData.voxelPos as [number, number, number];
+
+        if (mode === 'mine' || mode === 'tnt') {
+          highlightMesh.position.set(hx, hy, hz);
+          highlightMat.color.setHex(mode === 'tnt' ? 0xef4444 : 0xf87171);
+          highlightMesh.visible = true;
+        } else {
+          const norm = hit.face.normal;
+          highlightMesh.position.set(hx + norm.x, hy + norm.y, hz + norm.z);
+          highlightMat.color.setHex(0x38bdf8);
+          highlightMesh.visible = true;
+        }
+      } else {
+        highlightMesh.visible = false;
+      }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (!hasMoved) {
+        // Registered a clean block click
+        const hits = getRaycastHits(e.clientX, e.clientY);
+        const hit = hits[0];
+        if (hit && hit.face) {
+          const hitMesh = hit.object as THREE.Mesh;
+          const [hx, hy, hz] = hitMesh.userData.voxelPos as [number, number, number];
+          const isRightClick = e.button === 2 || e.shiftKey;
+
+          if (mode === 'tnt' || hitMesh.userData.voxelType === 'tnt') {
+            explodeAt(hx, hy, hz);
+          } else if (mode === 'mine' || isRightClick) {
+            removeBlock(hx, hy, hz);
+          } else {
+            const norm = hit.face.normal;
+            addBlock(selectedBlock, hx + norm.x, hy + norm.y, hz + norm.z);
+          }
+        }
+      }
+      isDragging = false;
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      radius += e.deltaY * 0.02;
+      updateCamera();
+    };
+
+    const dom = renderer.domElement;
+    dom.addEventListener('pointerdown', handlePointerDown);
+    dom.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    dom.addEventListener('wheel', handleWheel, { passive: false });
+    dom.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Generate initial terrain
+    generateIsland();
+
+    // Animation Loop
+    let animationId: number;
+    let clock = new THREE.Clock();
+
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+
+      // Update particles
+      for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+        const p = particlesRef.current[i];
+        p.vel.y -= 9.8 * delta;
+        p.mesh.position.addScaledVector(p.vel, delta);
+        p.life -= delta * 1.5;
+        p.mesh.scale.setScalar(Math.max(0.01, p.life));
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          p.mesh.geometry.dispose();
+          particlesRef.current.splice(i, 1);
+        }
+      }
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const handleResize = () => {
+      if (!container) return;
+      width = container.clientWidth;
+      height = container.clientHeight;
+      if (width === 0 || height === 0) return;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', handleResize);
+      dom.removeEventListener('pointerdown', handlePointerDown);
+      dom.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      dom.removeEventListener('wheel', handleWheel);
+      if (container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, [addBlock, removeBlock, explodeAt, generateIsland, mode, selectedBlock]);
+
+  // Keybindings 1-9
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const block = VOXEL_BLOCKS.find((b) => b.key === e.key);
+      if (block) {
+        setSelectedBlock(block.id);
+        setMode('place');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Update sky / lighting based on time of day
+  useEffect(() => {
+    if (hemiLightRef.current && dirLightRef.current) {
+      if (timeOfDay === 'day') {
+        hemiLightRef.current.color.setHex(0xffffff);
+        hemiLightRef.current.intensity = 0.75;
+        dirLightRef.current.color.setHex(0xfffaed);
+        dirLightRef.current.intensity = 0.95;
+      } else if (timeOfDay === 'sunset') {
+        hemiLightRef.current.color.setHex(0xfb923c);
+        hemiLightRef.current.intensity = 0.65;
+        dirLightRef.current.color.setHex(0xf97316);
+        dirLightRef.current.intensity = 0.85;
+      } else {
+        hemiLightRef.current.color.setHex(0x38bdf8);
+        hemiLightRef.current.intensity = 0.35;
+        dirLightRef.current.color.setHex(0x818cf8);
+        dirLightRef.current.intensity = 0.45;
+      }
+    }
+  }, [timeOfDay]);
+
+  return (
+    <div className="voxel-container">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h2 className="handwritten" style={{ margin: 0, fontSize: '27px' }}>
+            Notebook VoxelCraft 3D • Graph Paper Sandbox
+          </h2>
+          <p className="typewriter muted-copy" style={{ margin: '4px 0 8px' }}>
+            Mine, build, place blocks &amp; detonate TNT in a real-time 3D voxel sandbox scribbled onto your notebook!
+          </p>
+        </div>
+        <div className="typewriter game-score" style={{ margin: 0, fontSize: '11px' }}>
+          Mined: {minedCount} | Placed: {placedCount} | Blocks: {blockCount}
+        </div>
+      </div>
+
+      <div className={`voxel-arena-wrapper time-${timeOfDay}`}>
+        <div ref={mountRef} className="voxel-canvas-mount" />
+        <div className="voxel-crosshair" aria-hidden="true" />
+
+        <div className="voxel-hud-top">
+          <div className="voxel-hud-pill">
+            🎮 Drag to Orbit • Click to {mode === 'mine' ? 'Mine' : mode === 'tnt' ? 'Detonate' : 'Place'} • Keys 1-9
+          </div>
+          <div className="voxel-hud-pill">
+            Active: {VOXEL_BLOCKS.find((b) => b.id === selectedBlock)?.name}
+          </div>
+        </div>
+
+        {/* 9-Slot Minecraft Hotbar */}
+        <div className="voxel-hotbar">
+          {VOXEL_BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              type="button"
+              className={`voxel-hotbar-slot${selectedBlock === block.id && mode === 'place' ? ' selected' : ''}`}
+              onClick={() => {
+                setSelectedBlock(block.id);
+                setMode('place');
+              }}
+              title={`${block.name} (Key ${block.key})`}
+            >
+              <div className="voxel-block-preview" style={{ backgroundColor: block.previewColor }} />
+              <span className="voxel-slot-key">{block.key}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Toolbar & Modes */}
+      <div className="voxel-toolbar-grid typewriter">
+        <div className="voxel-mode-group">
+          <button
+            type="button"
+            className={`voxel-mode-btn${mode === 'place' ? ' active' : ''}`}
+            onClick={() => setMode('place')}
+          >
+            <Box aria-hidden="true" style={{ width: 14, height: 14 }} /> Build (Place)
+          </button>
+          <button
+            type="button"
+            className={`voxel-mode-btn${mode === 'mine' ? ' active' : ''}`}
+            onClick={() => setMode('mine')}
+          >
+            <Hammer aria-hidden="true" style={{ width: 14, height: 14 }} /> Mine (Break)
+          </button>
+          <button
+            type="button"
+            className={`voxel-mode-btn${mode === 'tnt' ? ' active' : ''}`}
+            onClick={() => setMode('tnt')}
+          >
+            <Flame aria-hidden="true" style={{ width: 14, height: 14 }} /> Detonate TNT
+          </button>
+        </div>
+
+        <div className="voxel-mode-group">
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
+          >
+            🌳 Plant Tree
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={() => setTimeOfDay((t) => (t === 'day' ? 'sunset' : t === 'sunset' ? 'night' : 'day'))}
+          >
+            {timeOfDay === 'day' ? '☀️ Day' : timeOfDay === 'sunset' ? '🌅 Sunset' : '🌙 Night'}
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={generateIsland}
+          >
+            <RotateCcw aria-hidden="true" style={{ width: 14, height: 14 }} /> Reset Island
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={generateFlat}
+          >
+            🧹 Flat World
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TicTacToeGame() {
   const [board, setBoard] = useState<TicTacToeMark[]>(Array(9).fill(null));
   const [aiThinking, setAiThinking] = useState(false);
@@ -2421,7 +3124,7 @@ function TicTacToeGame() {
 }
 
 function GamesPage() {
-  const [activeGameTab, setActiveGameTab] = useState<'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake'>('tictactoe');
+  const [activeGameTab, setActiveGameTab] = useState<'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake' | 'minecraft'>('tictactoe');
 
   const heroContainerVariants = {
     hidden: { opacity: 0 },
@@ -2440,7 +3143,7 @@ function GamesPage() {
     },
   };
 
-  const scrollToArcade = (tabKey: 'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake') => {
+  const scrollToArcade = (tabKey: 'tictactoe' | 'hangman' | 'paperball' | 'battleship' | 'snake' | 'minecraft') => {
     setActiveGameTab(tabKey);
     const elem = document.getElementById('arcade-arena');
     if (elem) {
@@ -2539,6 +3242,13 @@ function GamesPage() {
           >
             <Gamepad2 aria-hidden="true" style={{ width: 14, height: 14 }} /> 5. Pencil Snake Grid
           </button>
+          <button
+            type="button"
+            className={`game-tab-btn${activeGameTab === 'minecraft' ? ' selected' : ''}`}
+            onClick={() => setActiveGameTab('minecraft')}
+          >
+            <Box aria-hidden="true" style={{ width: 14, height: 14 }} /> 6. VoxelCraft 3D
+          </button>
         </div>
 
         <div className="games-layout">
@@ -2556,6 +3266,7 @@ function GamesPage() {
                 {activeGameTab === 'paperball' && <PaperBallGame />}
                 {activeGameTab === 'battleship' && <BattleshipGame />}
                 {activeGameTab === 'snake' && <SnakeGame />}
+                {activeGameTab === 'minecraft' && <MinecraftVoxelGame />}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -2579,6 +3290,14 @@ function GamesPage() {
           <h2 className="home-section-title handwritten">All Games Now Fully Playable</h2>
           <div className="draft-grid">
             {[
+              {
+                id: 'minecraft' as const,
+                title: 'Notebook VoxelCraft 3D',
+                kicker: '3D Voxel Sandbox Island',
+                copy: 'Mine, place blocks, plant trees, and detonate TNT on a real-time 3D Minecraft-like voxel canvas with full orbital camera controls.',
+                badge: 'Playable Now',
+                footer: 'Three.js Voxel Engine',
+              },
               {
                 id: 'battleship' as const,
                 title: 'Notebook Battleship',
