@@ -184,7 +184,7 @@ function SiteHeader({
       <div className="availability">
         <div className="site-width availability-inner typewriter">
           <span className="availability-dot" aria-hidden="true" />
-          <span>Currently available for Q2 design sprints &amp; creative projects</span>
+          <span>trying to vibe-code while my laptop fans scream in mercy</span>
         </div>
       </div>
       <header className="site-header">

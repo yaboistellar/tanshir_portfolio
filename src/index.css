@@ -2394,9 +2394,10 @@ a:focus-visible {
   margin-top: 12px;
   border-left: 4px solid #3b82f6;
   background: #eff6ff;
-  padding: 8px;
+  color: #1e3a8a;
+  padding: 8px 12px;
   font-size: 19px;
-  line-height: 1.05;
+  line-height: 1.25;
 }
 
 .black-beauty-card .book-note {
@@ -3603,6 +3604,18 @@ html.lenis, html.lenis body {
 .dark .milestone-note {
   color: #60a5fa !important;
   border-top-color: rgb(96 165 250 / 40%) !important;
+}
+
+.dark .book-note {
+  background: #17232e !important;
+  color: #f1f5f9 !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.dark .black-beauty-card .book-note {
+  border-left-color: #64748b !important;
+  background: #23272e !important;
+  color: #f1f5f9 !important;
 }
 
 .dark .previous-card p {
