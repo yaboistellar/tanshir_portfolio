@@ -3999,3 +3999,80 @@ html.lenis, html.lenis body {
   background: var(--note-ink);
   color: var(--note-cream);
 }
+
+.voxel-arena-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.voxel-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.1s ease;
+}
+
+.voxel-zoom-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: #facc15;
+  color: #facc15;
+}
+
+.voxel-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.voxel-exit-fullscreen {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 2px;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.voxel-exit-fullscreen:hover {
+  background: #000000;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.arcade-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999998 !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+  background: var(--note-cream) !important;
+  border-radius: 0 !important;
+}

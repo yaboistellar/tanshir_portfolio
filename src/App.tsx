@@ -27,7 +27,9 @@ import {
   Layers,
   Linkedin,
   Lock,
+  Maximize2,
   Menu,
+  Minimize2,
   Moon,
   MousePointerClick,
   Pencil,
@@ -48,6 +50,8 @@ import {
   Timer,
   Trophy,
   Wind,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 
 type PageKey = 'home' | 'games' | 'bookshelf' | 'education';
@@ -2387,6 +2391,7 @@ function MinecraftVoxelGame() {
   const [selectedBlock, setSelectedBlock] = useState<VoxelBlockType>('grass');
   const [mode, setMode] = useState<'mine' | 'place' | 'tnt'>('place');
   const [timeOfDay, setTimeOfDay] = useState<'day' | 'sunset' | 'night'>('day');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [minedCount, setMinedCount] = useState(0);
   const [placedCount, setPlacedCount] = useState(0);
   const [blockCount, setBlockCount] = useState(0);
@@ -2398,6 +2403,7 @@ function MinecraftVoxelGame() {
   const particlesRef = useRef<Array<{ mesh: THREE.Mesh; vel: THREE.Vector3; life: number }>>([]);
   const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
   const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
+  const zoomControlRef = useRef<((delta: number, reset?: boolean) => void) | null>(null);
 
   // Voxel key helper
   const getKey = (x: number, y: number, z: number) => `${Math.round(x)},${Math.round(y)},${Math.round(z)}`;
@@ -2633,8 +2639,8 @@ function MinecraftVoxelGame() {
     const container = mountRef.current;
     if (!container) return;
 
-    let width = container.clientWidth || 600;
-    let height = container.clientHeight || 420;
+    let width = container.clientWidth || (isFullscreen ? window.innerWidth : 600);
+    let height = container.clientHeight || (isFullscreen ? window.innerHeight : 420);
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
@@ -2690,13 +2696,23 @@ function MinecraftVoxelGame() {
 
     const updateCamera = () => {
       phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, phi));
-      radius = Math.max(6, Math.min(45, radius));
+      radius = Math.max(5, Math.min(48, radius));
       camera.position.x = target.x + radius * Math.sin(phi) * Math.sin(theta);
       camera.position.y = target.y + radius * Math.cos(phi);
       camera.position.z = target.z + radius * Math.sin(phi) * Math.cos(theta);
       camera.lookAt(target);
     };
     updateCamera();
+
+    // Hook zoom controls
+    zoomControlRef.current = (delta: number, reset?: boolean) => {
+      if (reset) {
+        radius = 22;
+      } else {
+        radius += delta;
+      }
+      updateCamera();
+    };
 
     // Mouse / Touch interaction handlers
     const raycaster = new THREE.Raycaster();
@@ -2782,6 +2798,7 @@ function MinecraftVoxelGame() {
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       radius += e.deltaY * 0.02;
       updateCamera();
     };
@@ -2824,8 +2841,8 @@ function MinecraftVoxelGame() {
 
     const handleResize = () => {
       if (!container) return;
-      width = container.clientWidth;
-      height = container.clientHeight;
+      width = isFullscreen ? window.innerWidth : container.clientWidth;
+      height = isFullscreen ? window.innerHeight : container.clientHeight;
       if (width === 0 || height === 0) return;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -2846,11 +2863,15 @@ function MinecraftVoxelGame() {
       }
       renderer.dispose();
     };
-  }, [addBlock, removeBlock, explodeAt, generateIsland, mode, selectedBlock]);
+  }, [addBlock, removeBlock, explodeAt, generateIsland, mode, selectedBlock, isFullscreen]);
 
-  // Keybindings 1-9
+  // Keybindings 1-9 and Escape for Fullscreen
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+        return;
+      }
       const block = VOXEL_BLOCKS.find((b) => b.key === e.key);
       if (block) {
         setSelectedBlock(block.id);
@@ -2859,7 +2880,19 @@ function MinecraftVoxelGame() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isFullscreen]);
+
+  // Lock body scroll when in fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
 
   // Update sky / lighting based on time of day
   useEffect(() => {
@@ -2894,21 +2927,65 @@ function MinecraftVoxelGame() {
             Mine, build, place blocks &amp; detonate TNT in a real-time 3D voxel sandbox scribbled onto your notebook!
           </p>
         </div>
-        <div className="typewriter game-score" style={{ margin: 0, fontSize: '11px' }}>
-          Mined: {minedCount} | Placed: {placedCount} | Blocks: {blockCount}
+        <div className="typewriter game-score" style={{ margin: 0, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>Mined: {minedCount} | Placed: {placedCount} | Blocks: {blockCount}</span>
+          <button
+            type="button"
+            className="voxel-zoom-btn"
+            style={{ width: 'auto', padding: '2px 8px', fontSize: '11px' }}
+            onClick={() => setIsFullscreen((f) => !f)}
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen View (Scroll to Zoom freely)'}
+          >
+            {isFullscreen ? <Minimize2 style={{ width: 12, height: 12 }} /> : <Maximize2 style={{ width: 12, height: 12 }} />}
+            <span style={{ marginLeft: 4 }}>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
         </div>
       </div>
 
-      <div className={`voxel-arena-wrapper time-${timeOfDay}`}>
+      <div className={`voxel-arena-wrapper time-${timeOfDay}${isFullscreen ? ' voxel-arena-fullscreen' : ''}`}>
         <div ref={mountRef} className="voxel-canvas-mount" />
         <div className="voxel-crosshair" aria-hidden="true" />
 
+        {/* Exit fullscreen floating button */}
+        {isFullscreen && (
+          <button
+            type="button"
+            className="voxel-exit-fullscreen typewriter"
+            onClick={() => setIsFullscreen(false)}
+          >
+            <Minimize2 style={{ width: 14, height: 14 }} /> Exit Fullscreen (Esc)
+          </button>
+        )}
+
         <div className="voxel-hud-top">
           <div className="voxel-hud-pill">
-            🎮 Drag to Orbit • Click to {mode === 'mine' ? 'Mine' : mode === 'tnt' ? 'Detonate' : 'Place'} • Keys 1-9
+            🎮 Drag: Orbit • Wheel/Pinch: Zoom • Click: {mode === 'mine' ? 'Mine' : mode === 'tnt' ? 'Detonate' : 'Place'} • Keys 1-9
           </div>
-          <div className="voxel-hud-pill">
-            Active: {VOXEL_BLOCKS.find((b) => b.id === selectedBlock)?.name}
+          <div className="voxel-hud-actions">
+            <button
+              type="button"
+              className="voxel-zoom-btn"
+              onClick={() => zoomControlRef.current?.(-3)}
+              title="Zoom In"
+            >
+              <ZoomIn style={{ width: 13, height: 13 }} />
+            </button>
+            <button
+              type="button"
+              className="voxel-zoom-btn"
+              onClick={() => zoomControlRef.current?.(3)}
+              title="Zoom Out"
+            >
+              <ZoomOut style={{ width: 13, height: 13 }} />
+            </button>
+            <button
+              type="button"
+              className="voxel-zoom-btn"
+              onClick={() => setIsFullscreen((f) => !f)}
+              title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Enter Fullscreen Mode'}
+            >
+              {isFullscreen ? <Minimize2 style={{ width: 13, height: 13 }} /> : <Maximize2 style={{ width: 13, height: 13 }} />}
+            </button>
           </div>
         </div>
 
@@ -2962,6 +3039,22 @@ function MinecraftVoxelGame() {
           <button
             type="button"
             className="voxel-mode-btn"
+            onClick={() => zoomControlRef.current?.(-3)}
+            title="Zoom In camera"
+          >
+            <ZoomIn aria-hidden="true" style={{ width: 14, height: 14 }} /> Zoom In
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={() => zoomControlRef.current?.(3)}
+            title="Zoom Out camera"
+          >
+            <ZoomOut aria-hidden="true" style={{ width: 14, height: 14 }} /> Zoom Out
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
             onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
           >
             🌳 Plant Tree
@@ -2986,6 +3079,14 @@ function MinecraftVoxelGame() {
             onClick={generateFlat}
           >
             🧹 Flat World
+          </button>
+          <button
+            type="button"
+            className="voxel-mode-btn"
+            onClick={() => setIsFullscreen((f) => !f)}
+          >
+            {isFullscreen ? <Minimize2 aria-hidden="true" style={{ width: 14, height: 14 }} /> : <Maximize2 aria-hidden="true" style={{ width: 14, height: 14 }} />}
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           </button>
         </div>
       </div>
