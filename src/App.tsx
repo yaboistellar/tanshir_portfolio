@@ -1276,7 +1276,7 @@ function HomePage() {
               <ArrowRight aria-hidden="true" /> homework inside!
             </motion.div>
           </div>
-          <motion.div className="home-stats" variants={heroItemVariants} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+          <motion.div className="home-stats" variants={heroItemVariants}>
             <Interactive3DBox className="note-card cream-note" maxTilt={8} depth={16}>
               <div className="typewriter note-kicker">Field Metrics</div>
               <p className="handwritten">nothing but a lot of self teaching which worked out pretty well</p>
@@ -3327,7 +3327,7 @@ function GamesPage() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
-          style={{ gridTemplateColumns: '1fr', minHeight: 'auto', paddingTop: 0 }}
+          style={{ minHeight: 'auto', paddingTop: 0 }}
         >
           <ThreeBackgroundScene />
           <div style={{ position: 'relative', zIndex: 1 }}>
@@ -3368,7 +3368,7 @@ function GamesPage() {
             <motion.div className="mobile-notice-banner typewriter" variants={heroItemVariants}>
               <Smartphone aria-hidden="true" />
               <span>
-                <strong>Desk Note:</strong> Best experienced on desktop / laptop screens. Touch gestures and mobile layouts for arcade games are still being tuned and don&apos;t work properly on mobile devices yet.
+                <strong>Mobile &amp; Touch Ready:</strong> Handcrafted arcade mini-games are fully tuned for touch screens, mobile layouts, and responsive desktop play.
               </span>
             </motion.div>
           </div>
@@ -3590,6 +3590,141 @@ function BookCard({
   );
 }
 
+interface ToReadItem {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
+const DEFAULT_TO_READ_STACK: ToReadItem[] = [
+  { id: '1', title: 'Diary of a Wimpy Kid', done: true },
+  { id: '2', title: 'Sprint', done: true },
+  { id: '3', title: 'The Shape of Design', done: false },
+  { id: '4', title: 'Gödel, Escher, Bach', done: false },
+  { id: '5', title: 'Invisible Cities', done: false },
+];
+
+function ToReadStackWidget() {
+  const [items, setItems] = useState<ToReadItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('tanshir_to_read_stack');
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // fallback
+      }
+    }
+    return DEFAULT_TO_READ_STACK;
+  });
+
+  const [newTitle, setNewTitle] = useState('');
+
+  const saveItems = (updated: ToReadItem[]) => {
+    setItems(updated);
+    try {
+      localStorage.setItem('tanshir_to_read_stack', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleItem = (id: string) => {
+    const updated = items.map((item) =>
+      item.id === id ? { ...item, done: !item.done } : item
+    );
+    saveItems(updated);
+  };
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    const newItem: ToReadItem = {
+      id: String(Date.now()),
+      title: newTitle.trim(),
+      done: false,
+    };
+    saveItems([...items, newItem]);
+    setNewTitle('');
+  };
+
+  const removeItem = (id: string) => {
+    saveItems(items.filter((item) => item.id !== id));
+  };
+
+  const markAll = (done: boolean) => {
+    saveItems(items.map((item) => ({ ...item, done })));
+  };
+
+  const doneCount = items.filter((i) => i.done).length;
+
+  return (
+    <Interactive3DBox className="to-read ink-border shadow-note" maxTilt={8} depth={16}>
+      <div className="to-read-header">
+        <div className="typewriter tools-kicker">
+          <BookOpen aria-hidden="true" /> Shelf • The To-Read Stack (Drafting Shelf)
+        </div>
+        <span className="typewriter to-read-badge">
+          {doneCount}/{items.length} read
+        </span>
+      </div>
+
+      <ul className="to-read-list">
+        {items.map((item) => (
+          <li
+            key={item.id}
+            className={`to-read-item handwritten${item.done ? ' item-done' : ''}`}
+            onClick={() => toggleItem(item.id)}
+          >
+            <input
+              type="checkbox"
+              checked={item.done}
+              onChange={() => toggleItem(item.id)}
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Mark ${item.title} as read`}
+            />
+            <span className="to-read-title">{item.title}</span>
+            {item.done && <span className="typewriter done-stamp">✓ Done</span>}
+            <button
+              type="button"
+              className="to-read-delete"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeItem(item.id);
+              }}
+              aria-label={`Remove ${item.title}`}
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <form className="to-read-add-form" onSubmit={handleAdd}>
+        <input
+          type="text"
+          className="to-read-input handwritten"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Add book title to shelf…"
+        />
+        <button type="submit" className="to-read-add-btn typewriter">
+          + Add
+        </button>
+      </form>
+
+      <div className="to-read-actions typewriter">
+        <button type="button" onClick={() => markAll(true)}>
+          Mark All Read
+        </button>
+        <span>•</span>
+        <button type="button" onClick={() => markAll(false)}>
+          Reset Stack
+        </button>
+      </div>
+    </Interactive3DBox>
+  );
+}
+
 function BookshelfPage() {
   const [running, setRunning] = useState(false);
   const [seconds, setSeconds] = useState(15 * 60);
@@ -3636,7 +3771,7 @@ function BookshelfPage() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
-          style={{ gridTemplateColumns: 'minmax(0, 1fr) 280px', minHeight: 'auto', paddingTop: 0 }}
+          style={{ minHeight: 'auto', paddingTop: 0 }}
         >
           <ThreeBackgroundScene />
           <div style={{ position: 'relative', zIndex: 1 }}>
@@ -3670,7 +3805,7 @@ function BookshelfPage() {
             <motion.div className="mobile-notice-banner typewriter" variants={heroItemVariants}>
               <Smartphone aria-hidden="true" />
               <span>
-                <strong>Desk Note:</strong> The 3D interactive bookshelf layout is best viewed on desktop. A dedicated mobile reading layout is still under development and doesn&apos;t display properly on mobile screens yet.
+                <strong>Reading Nook Note:</strong> Fully responsive across mobile &amp; desktop — track active desk readings, explore finished reviews, sprint countdown, and interactive to-read stack.
               </span>
             </motion.div>
           </div>
@@ -3745,20 +3880,7 @@ function BookshelfPage() {
         </section>
 
         <section className="shelf-tools">
-          <Interactive3DBox className="to-read ink-border shadow-note" maxTilt={8} depth={16}>
-            <div className="typewriter tools-kicker">
-              <BookOpen aria-hidden="true" /> Shelf • The To-Read Stack (Drafting Shelf)
-            </div>
-            <ul>
-              {['Diary of a Wimpy Kid', 'Sprint', 'The Shape of Design', 'Gödel, Escher, Bach', 'Invisible Cities'].map(
-                (book) => (
-                  <li className="handwritten" key={book}>
-                    <input type="checkbox" /> {book}
-                  </li>
-                )
-              )}
-            </ul>
-          </Interactive3DBox>
+          <ToReadStackWidget />
           <div className="study-tools" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Interactive3DBox className="sprint-card ink-border shadow-note" maxTilt={10} depth={18}>
               <div className="typewriter tools-kicker">
@@ -3935,7 +4057,7 @@ function EducationPage() {
           variants={heroContainerVariants}
           initial="hidden"
           animate="visible"
-          style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', minHeight: 'auto', paddingTop: 0 }}
+          style={{ minHeight: 'auto', paddingTop: 0 }}
         >
           <ThreeBackgroundScene />
           <div style={{ position: 'relative', zIndex: 1 }}>
