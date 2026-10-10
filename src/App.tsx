@@ -1252,6 +1252,14 @@ function HomePage() {
         >
           <p className="section-kicker typewriter red-kicker">Assignment Log // Index 02</p>
           <h2 className="home-section-title handwritten">Demo Projects</h2>
+
+          <div className="demo-projects-notice typewriter">
+            <span className="notice-badge">📌 NOTE</span>
+            <p className="notice-text">
+              Please note: These showcase projects are <strong>fictional demo concepts</strong> created to demonstrate UI/UX architectures and creative engineering. Real production projects are currently being thought out and developed, and will be published here as soon as possible.
+            </p>
+          </div>
+
           <div className="filter-row typewriter" role="tablist" aria-label="Project filter">
             {(
               [
