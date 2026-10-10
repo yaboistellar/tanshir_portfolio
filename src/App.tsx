@@ -27,6 +27,7 @@ import {
   Layers,
   Linkedin,
   Lock,
+  Mail,
   Maximize2,
   Menu,
   Minimize2,
@@ -1011,37 +1012,84 @@ function HomePage() {
 
     const form = event.currentTarget;
     const data = new FormData(form);
+    const name = ((data.get('name') as string) || '').trim();
+    const email = ((data.get('email') as string) || '').trim();
+    const message = ((data.get('message') as string) || '').trim();
+    const services = [
+      data.get('ux') ? 'Full UI/UX Sprint' : null,
+      data.get('code') ? 'Code / Frontend' : null,
+    ].filter(Boolean).join(', ');
 
-    const body = {
-      access_key: import.meta.env.VITE_WEB3FORMS_KEY,
-      subject: 'New Note from Portfolio — ' + (data.get('name') as string),
-      from_name: data.get('name') as string,
-      email: data.get('email') as string,
-      message: (data.get('message') as string) +
-        '\n\nServices requested: ' + [
-          (data.get('ux') ? 'Full UI/UX Sprint' : null),
-          (data.get('code') ? 'Code / Frontend' : null),
-        ].filter(Boolean).join(', '),
-      replyto: data.get('email') as string,
-    };
+    const fullMessage = message + (services ? `\n\nServices requested: ${services}` : '');
+    const recipientEmail = import.meta.env.VITE_CONTACT_EMAIL || 'tanshiralmusnad80@gmail.com';
+    const web3formsKey = import.meta.env.VITE_WEB3FORMS_KEY;
 
-    try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const json = await res.json() as { success: boolean; message?: string };
-      if (json.success) {
-        setFormStatus('success');
-        form.reset();
-      } else {
-        setFormStatus('error');
-        setFormError(json.message ?? 'Something went wrong. Please try again.');
+    let success = false;
+    let errorMessage = '';
+
+    // 1. Try Web3Forms if an access key is explicitly provided
+    if (web3formsKey && web3formsKey !== 'your_access_key_here' && web3formsKey.trim().length > 0) {
+      try {
+        const body = {
+          access_key: web3formsKey.trim(),
+          subject: `New Note from Portfolio — ${name || 'Visitor'}`,
+          from_name: name || 'Portfolio Visitor',
+          email,
+          message: fullMessage,
+          replyto: email,
+        };
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = (await res.json()) as { success: boolean; message?: string };
+        if (json.success) {
+          success = true;
+        } else {
+          errorMessage = json.message || '';
+        }
+      } catch (err) {
+        errorMessage = err instanceof Error ? err.message : 'Web3Forms failed';
       }
-    } catch {
+    }
+
+    // 2. Direct delivery to recipient email via FormSubmit
+    if (!success) {
+      try {
+        const res = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            name: name || 'Portfolio Visitor',
+            email,
+            _replyto: email,
+            _subject: `New Note from Portfolio — ${name || 'Visitor'}`,
+            message: fullMessage,
+            _template: 'table',
+            _captcha: 'false',
+          }),
+        });
+
+        const json = (await res.json()) as { success: boolean | string; message?: string };
+        const isSuccess = json.success === true || json.success === 'true';
+
+        if (isSuccess || (json.message && /activation/i.test(json.message))) {
+          success = true;
+        } else {
+          errorMessage = json.message || errorMessage || 'Failed to submit form.';
+        }
+      } catch {
+        errorMessage = 'Network error — please check your connection or reach out via email directly.';
+      }
+    }
+
+    if (success) {
+      setFormStatus('success');
+      form.reset();
+    } else {
       setFormStatus('error');
-      setFormError('Network error — please check your connection and try again.');
+      setFormError(errorMessage || 'Something went wrong. Please try again.');
     }
   }
 
@@ -1445,12 +1493,19 @@ function HomePage() {
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  ✗ {formError}
+                  ✗ {formError} — Or email directly at{' '}
+                  <a
+                    href="mailto:tanshiralmusnad80@gmail.com"
+                    style={{ textDecoration: 'underline', color: 'inherit' }}
+                  >
+                    tanshiralmusnad80@gmail.com
+                  </a>
                 </motion.p>
               )}
               <div className="contact-links typewriter">
                 <div>
                   {[
+                    { label: 'Email', href: 'mailto:tanshiralmusnad80@gmail.com', icon: <Mail aria-hidden="true" /> },
                     { label: 'GitHub', href: 'https://github.com/yaboistellar', icon: <Github aria-hidden="true" /> },
                     { label: 'Instagram', href: 'https://www.instagram.com/curtainsyh/', icon: <Instagram aria-hidden="true" /> },
                     { label: 'Facebook', href: 'https://web.facebook.com/profile.php?id=61590300914480', icon: <Facebook aria-hidden="true" /> },
