@@ -1006,13 +1006,13 @@ function HomePage() {
 
   const allProjects = [
     {
-      title: 'Kindle ReadFlow',
-      icon: <Hourglass />,
+      title: 'Ambient Studio',
+      icon: <Gamepad2 />,
       number: '01',
-      copy: 'A focused reading-flow study exploring typography, pace, and frictionless chapter navigation for e-readers.',
-      tags: ['UX Research', 'Figma Prototype', 'Typography Engine'],
-      category: ['ux', 'research'],
-      action: 'Read Study',
+      copy: 'An indie gaming laboratory crafting quirky arcade mechanics, retro soundscapes, and delightfully silly interactive web games.',
+      tags: ['Indie Game Lab', 'Web Audio API', 'Creative Coding'],
+      category: ['web', 'code', 'ux'],
+      action: 'Explore Studio',
     },
     {
       title: 'Artisan Coffee Wheel',
