@@ -2989,105 +2989,79 @@ function MinecraftVoxelGame() {
           </div>
         </div>
 
-        {/* 9-Slot Minecraft Hotbar */}
-        <div className="voxel-hotbar">
-          {VOXEL_BLOCKS.map((block) => (
+        {/* Bottom Control Dock: Always visible in normal & fullscreen */}
+        <div className="voxel-bottom-dock">
+          {/* Action Tools Row */}
+          <div className="voxel-toolbar-dock typewriter">
             <button
-              key={block.id}
               type="button"
-              className={`voxel-hotbar-slot${selectedBlock === block.id && mode === 'place' ? ' selected' : ''}`}
-              onClick={() => {
-                setSelectedBlock(block.id);
-                setMode('place');
-              }}
-              title={`${block.name} (Key ${block.key})`}
+              className={`voxel-dock-btn${mode === 'place' ? ' active' : ''}`}
+              onClick={() => setMode('place')}
             >
-              <div className="voxel-block-preview" style={{ backgroundColor: block.previewColor }} />
-              <span className="voxel-slot-key">{block.key}</span>
+              <Box aria-hidden="true" style={{ width: 12, height: 12 }} /> Build (Place)
             </button>
-          ))}
-        </div>
-      </div>
+            <button
+              type="button"
+              className={`voxel-dock-btn${mode === 'mine' ? ' active' : ''}`}
+              onClick={() => setMode('mine')}
+            >
+              <Hammer aria-hidden="true" style={{ width: 12, height: 12 }} /> Mine (Break)
+            </button>
+            <button
+              type="button"
+              className={`voxel-dock-btn${mode === 'tnt' ? ' active' : ''}`}
+              onClick={() => setMode('tnt')}
+            >
+              <Flame aria-hidden="true" style={{ width: 12, height: 12 }} /> Detonate TNT
+            </button>
+            <button
+              type="button"
+              className="voxel-dock-btn"
+              onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
+            >
+              🌳 Plant Tree
+            </button>
+            <button
+              type="button"
+              className="voxel-dock-btn"
+              onClick={() => setTimeOfDay((t) => (t === 'day' ? 'sunset' : t === 'sunset' ? 'night' : 'day'))}
+            >
+              {timeOfDay === 'day' ? '☀️ Day' : timeOfDay === 'sunset' ? '🌅 Sunset' : '🌙 Night'}
+            </button>
+            <button
+              type="button"
+              className="voxel-dock-btn"
+              onClick={generateIsland}
+            >
+              <RotateCcw aria-hidden="true" style={{ width: 12, height: 12 }} /> Reset Island
+            </button>
+            <button
+              type="button"
+              className="voxel-dock-btn"
+              onClick={generateFlat}
+            >
+              🧹 Flat World
+            </button>
+          </div>
 
-      {/* Toolbar & Modes */}
-      <div className="voxel-toolbar-grid typewriter">
-        <div className="voxel-mode-group">
-          <button
-            type="button"
-            className={`voxel-mode-btn${mode === 'place' ? ' active' : ''}`}
-            onClick={() => setMode('place')}
-          >
-            <Box aria-hidden="true" style={{ width: 14, height: 14 }} /> Build (Place)
-          </button>
-          <button
-            type="button"
-            className={`voxel-mode-btn${mode === 'mine' ? ' active' : ''}`}
-            onClick={() => setMode('mine')}
-          >
-            <Hammer aria-hidden="true" style={{ width: 14, height: 14 }} /> Mine (Break)
-          </button>
-          <button
-            type="button"
-            className={`voxel-mode-btn${mode === 'tnt' ? ' active' : ''}`}
-            onClick={() => setMode('tnt')}
-          >
-            <Flame aria-hidden="true" style={{ width: 14, height: 14 }} /> Detonate TNT
-          </button>
-        </div>
-
-        <div className="voxel-mode-group">
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={() => zoomControlRef.current?.(-3)}
-            title="Zoom In camera"
-          >
-            <ZoomIn aria-hidden="true" style={{ width: 14, height: 14 }} /> Zoom In
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={() => zoomControlRef.current?.(3)}
-            title="Zoom Out camera"
-          >
-            <ZoomOut aria-hidden="true" style={{ width: 14, height: 14 }} /> Zoom Out
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={() => plantTree(Math.floor(Math.random() * 4 - 2), 2, Math.floor(Math.random() * 4 - 2))}
-          >
-            🌳 Plant Tree
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={() => setTimeOfDay((t) => (t === 'day' ? 'sunset' : t === 'sunset' ? 'night' : 'day'))}
-          >
-            {timeOfDay === 'day' ? '☀️ Day' : timeOfDay === 'sunset' ? '🌅 Sunset' : '🌙 Night'}
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={generateIsland}
-          >
-            <RotateCcw aria-hidden="true" style={{ width: 14, height: 14 }} /> Reset Island
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={generateFlat}
-          >
-            🧹 Flat World
-          </button>
-          <button
-            type="button"
-            className="voxel-mode-btn"
-            onClick={() => setIsFullscreen((f) => !f)}
-          >
-            {isFullscreen ? <Minimize2 aria-hidden="true" style={{ width: 14, height: 14 }} /> : <Maximize2 aria-hidden="true" style={{ width: 14, height: 14 }} />}
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </button>
+          {/* 9-Slot Minecraft Hotbar */}
+          <div className="voxel-hotbar">
+            {VOXEL_BLOCKS.map((block) => (
+              <button
+                key={block.id}
+                type="button"
+                className={`voxel-hotbar-slot${selectedBlock === block.id && mode === 'place' ? ' selected' : ''}`}
+                onClick={() => {
+                  setSelectedBlock(block.id);
+                  setMode('place');
+                }}
+                title={`${block.name} (Key ${block.key})`}
+              >
+                <div className="voxel-block-preview" style={{ backgroundColor: block.previewColor }} />
+                <span className="voxel-slot-key">{block.key}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

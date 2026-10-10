@@ -3950,54 +3950,75 @@ html.lenis, html.lenis body {
   text-shadow: 0 1px 1px #000;
 }
 
-.voxel-toolbar-grid {
+.voxel-bottom-dock {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
+  z-index: 15;
+  max-width: 96%;
+  width: max-content;
 }
 
-.voxel-mode-group {
+.voxel-hotbar {
   display: flex;
   gap: 4px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  padding: 4px 6px;
+  border: 2px solid #334155;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  max-width: 100%;
+  overflow-x: auto;
 }
 
-.voxel-mode-btn {
+.voxel-toolbar-dock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 4px 8px;
+  border: 1.5px solid #334155;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.voxel-dock-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border: 2px solid var(--note-ink);
-  background: var(--note-surface);
-  color: var(--note-ink);
-  padding: 6px 12px;
+  gap: 4px;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 4px 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
   border-radius: 2px;
-  transition: all 0.15s ease;
+  transition: all 0.12s ease;
+  white-space: nowrap;
 }
 
-.voxel-mode-btn.active {
-  background: var(--note-ink);
-  color: var(--note-cream);
+.voxel-dock-btn:hover {
+  background: #334155;
+  border-color: #facc15;
+  color: #facc15;
 }
 
-.voxel-mode-btn:hover:not(.active) {
-  background: var(--note-surface-soft);
-}
-
-.dark .voxel-mode-btn {
-  background: var(--note-surface);
-  color: #ffffff;
-  border-color: var(--note-ink);
-}
-
-.dark .voxel-mode-btn.active {
-  background: var(--note-ink);
-  color: var(--note-cream);
+.voxel-dock-btn.active {
+  background: #facc15;
+  color: #0f172a;
+  border-color: #facc15;
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.5);
 }
 
 .voxel-arena-fullscreen {
