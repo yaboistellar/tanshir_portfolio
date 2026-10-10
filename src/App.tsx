@@ -808,6 +808,7 @@ interface ProjectItem {
   category: string[];
   action: string;
   url?: string;
+  banner?: string;
 }
 
 function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
@@ -874,6 +875,32 @@ function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
           <span key={tag}>{tag}</span>
         ))}
       </div>
+      {project.banner && (
+        <div className="project-banner-wrap" style={{ transform: 'translateZ(28px)' }}>
+          {project.url ? (
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="project-banner-link"
+              tabIndex={-1}
+              aria-label={`Open ${project.title}`}
+            >
+              <img
+                src={project.banner}
+                alt={`${project.title} Banner`}
+                className="project-banner-img ink-border shadow-note"
+              />
+            </a>
+          ) : (
+            <img
+              src={project.banner}
+              alt={`${project.title} Banner`}
+              className="project-banner-img ink-border shadow-note"
+            />
+          )}
+        </div>
+      )}
       <div style={{ transform: 'translateZ(30px)' }}>
         {project.url ? (
           <motion.a
@@ -1035,6 +1062,7 @@ function HomePage() {
       category: ['web', 'code', 'ux'],
       action: 'Explore Studio',
       url: 'https://ambientstudio-delta.vercel.app',
+      banner: '/images/ambient-studio-banner.png',
     },
     {
       title: 'Artisan Coffee Wheel',

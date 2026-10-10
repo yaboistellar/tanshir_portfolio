@@ -1189,6 +1189,33 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.project-banner-wrap {
+  margin: 6px 0 16px;
+  width: 100%;
+}
+
+.project-banner-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.project-banner-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  border-radius: 2px;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.project-banner-link:hover .project-banner-img {
+  transform: scale(1.02);
+  filter: brightness(1.06);
+}
+
 .text-link {
   display: inline-flex;
   align-items: center;
