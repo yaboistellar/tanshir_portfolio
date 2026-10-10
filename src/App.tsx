@@ -59,7 +59,7 @@ type PageKey = 'home' | 'games' | 'bookshelf' | 'education';
 
 const navigation = [
   { label: 'Home', href: '/', page: 'home' as PageKey },
-  { label: 'Demo Projects', href: '/#projects', page: 'home' as PageKey },
+  { label: 'Projects', href: '/#projects', page: 'home' as PageKey },
   { label: 'Notebook Games', href: '/games', page: 'games' as PageKey },
   { label: 'Bookshelf', href: '/bookshelf', page: 'bookshelf' as PageKey },
   { label: 'Education', href: '/education', page: 'education' as PageKey },
@@ -91,7 +91,7 @@ function Navigation({
       {navigation.map((item) => (
         <a
           key={item.label}
-          className={`nav-link${item.page === page && item.label !== 'Demo Projects' && item.label !== 'Contact' ? ' active' : ''}`}
+          className={`nav-link${item.page === page && item.label !== 'Projects' && item.label !== 'Contact' ? ' active' : ''}`}
           href={item.href}
           data-testid={`link-${item.label.toLowerCase().replaceAll(' ', '-')}`}
           onClick={onNavigate}
@@ -1274,14 +1274,7 @@ function HomePage() {
           transition={{ duration: 0.6, ease: 'easeOut' as const }}
         >
           <p className="section-kicker typewriter red-kicker">Assignment Log // Index 02</p>
-          <h2 className="home-section-title handwritten">Demo Projects</h2>
-
-          <div className="demo-projects-notice typewriter">
-            <span className="notice-badge">📌 NOTE</span>
-            <p className="notice-text">
-              Please note: These showcase projects are <strong>fictional demo concepts</strong> created to demonstrate UI/UX architectures and creative engineering. Real production projects are currently being thought out and developed, and will be published here as soon as possible.
-            </p>
-          </div>
+          <h2 className="home-section-title handwritten">Projects</h2>
 
           <div className="filter-row typewriter" role="tablist" aria-label="Project filter">
             {(
