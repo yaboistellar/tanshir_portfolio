@@ -33,6 +33,7 @@ import {
   Minimize2,
   Moon,
   MousePointerClick,
+  Orbit,
   Pencil,
   PenLine,
   PenTool,
@@ -49,6 +50,7 @@ import {
   Target,
   Terminal,
   Timer,
+  Triangle,
   Trophy,
   Wind,
   ZoomIn,
@@ -1054,6 +1056,9 @@ function HomePage() {
     { name: 'Gemini', kind: 'Multimodal AI', detail: 'Deep Research & Vision', icon: <Sparkles /> },
     { name: 'Google Stitch', kind: 'AI Design Tool', detail: 'Generative UI Architecture', icon: <MousePointerClick /> },
     { name: 'Adobe Illustrator', kind: 'Vector Craft', detail: 'Vector & Precision Assets', icon: <Brush /> },
+    { name: 'Antigravity', kind: 'Agentic AI IDE / Dev', detail: 'Autonomous Workflows & Coding', icon: <Orbit /> },
+    { name: 'Vercel', kind: 'Cloud Edge & Deploy', detail: 'Zero-Config CI/CD & Edge Hosting', icon: <Triangle fill="currentColor" stroke="none" /> },
+    { name: 'GitHub', kind: 'Version Control & Git', detail: 'Branching, Repos & Open Source', icon: <Github /> },
   ];
 
   const heroContainerVariants = {
