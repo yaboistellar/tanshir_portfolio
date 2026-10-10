@@ -1023,7 +1023,12 @@ function HomePage() {
   const allProjects = [
     {
       title: 'Ambient Studio',
-      icon: <Gamepad2 />,
+      icon: (
+        <img
+          src="/images/ambient-studio-logo.jpg"
+          alt="Ambient Studio Logo"
+        />
+      ),
       number: '01',
       copy: 'An indie gaming laboratory crafting quirky arcade mechanics, retro soundscapes, and delightfully silly interactive web games.',
       tags: ['Indie Game Lab', 'Web Audio API', 'Creative Coding'],
