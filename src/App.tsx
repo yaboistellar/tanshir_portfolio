@@ -16,7 +16,6 @@ import {
   Cpu,
   Eraser,
   Facebook,
-  FileText,
   Flame,
   Gamepad2,
   Github,
@@ -48,7 +47,6 @@ import {
   StickyNote,
   Sun,
   Target,
-  Terminal,
   Timer,
   Triangle,
   Trophy,
@@ -802,7 +800,7 @@ function ThreeBackgroundScene() {
 interface ProjectItem {
   title: string;
   icon: React.ReactNode;
-  number: string;
+  number?: string;
   copy: string;
   tags: string[];
   category: string[];
@@ -864,7 +862,7 @@ function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
         >
           {project.icon}
         </motion.span>
-        <span className="typewriter">Demo Project {project.number}</span>
+        {project.number && <span className="typewriter">Demo Project {project.number}</span>}
       </div>
       <h3 className="handwritten" style={{ transform: 'translateZ(34px)' }}>
         {project.title}
@@ -1056,40 +1054,12 @@ function HomePage() {
           alt="Ambient Studio Logo"
         />
       ),
-      number: '01',
       copy: 'An indie gaming laboratory crafting quirky arcade mechanics, retro soundscapes, and delightfully silly interactive web games.',
       tags: ['Indie Game Lab', 'Web Audio API', 'Creative Coding'],
       category: ['web', 'code', 'ux'],
       action: 'Explore Studio',
       url: 'https://ambientstudio-delta.vercel.app',
       banner: '/images/ambient-studio-banner.png',
-    },
-    {
-      title: 'Artisan Coffee Wheel',
-      icon: <Coffee />,
-      number: '02',
-      copy: 'An interactive flavor wheel pairing tasting notes with roast origins — built for delightful discovery.',
-      tags: ['Next.js 16', 'Tailwind CSS', 'Framer Motion'],
-      category: ['web', 'code'],
-      action: 'Explore Demo',
-    },
-    {
-      title: 'FinDoodle',
-      icon: <FileText />,
-      number: '03',
-      copy: 'Making personal finance feel less scary through hand-drawn data viz and gentle nudges.',
-      tags: ['Design System', 'Data Viz', 'React Native'],
-      category: ['ux', 'research'],
-      action: 'Read Study',
-    },
-    {
-      title: 'TypeCraft',
-      icon: <Terminal />,
-      number: '04',
-      copy: 'An interactive typographic playground for tweaking variable fonts and OpenType features in real time.',
-      tags: ['TypeScript', 'Canvas API', 'OpenType.js'],
-      category: ['web', 'code'],
-      action: 'Launch Tool',
     },
   ];
 
