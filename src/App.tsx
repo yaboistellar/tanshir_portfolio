@@ -807,6 +807,7 @@ interface ProjectItem {
   tags: string[];
   category: string[];
   action: string;
+  url?: string;
 }
 
 function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
@@ -874,14 +875,27 @@ function Interactive3DProjectCard({ project }: { project: ProjectItem }) {
         ))}
       </div>
       <div style={{ transform: 'translateZ(30px)' }}>
-        <motion.button
-          className="text-link handwritten"
-          type="button"
-          whileHover={{ x: 6 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {project.action} <ArrowRight aria-hidden="true" />
-        </motion.button>
+        {project.url ? (
+          <motion.a
+            className="text-link handwritten"
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ x: 6 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {project.action} <ArrowRight aria-hidden="true" />
+          </motion.a>
+        ) : (
+          <motion.button
+            className="text-link handwritten"
+            type="button"
+            whileHover={{ x: 6 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {project.action} <ArrowRight aria-hidden="true" />
+          </motion.button>
+        )}
       </div>
     </motion.article>
   );
@@ -1015,6 +1029,7 @@ function HomePage() {
       tags: ['Indie Game Lab', 'Web Audio API', 'Creative Coding'],
       category: ['web', 'code', 'ux'],
       action: 'Explore Studio',
+      url: 'https://ambientstudio-delta.vercel.app',
     },
     {
       title: 'Artisan Coffee Wheel',

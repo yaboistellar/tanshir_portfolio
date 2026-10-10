@@ -1191,6 +1191,8 @@ a:focus-visible {
   cursor: pointer;
   font-size: 22px;
   font-weight: 700;
+  color: inherit;
+  text-decoration: none;
 }
 
 .text-link:hover {
