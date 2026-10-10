@@ -2929,10 +2929,10 @@ function FormalFoundations() {
             <p className="previous-title typewriter" style={{ margin: '14px 0 8px' }}>Previous Foundations</p>
             <div className="previous-grid">
               {[
-                ['Playpen School', 'Local Foundation', 'Early Years'],
-                ['Al-Hidayah', 'Islamic Studies', 'Primary'],
-                ['CIDER', 'Inclusive Ed.', 'Bridge Program'],
-                ['Bangladesh Elementary', 'National Curriculum', 'Grades 1-4'],
+                ['Playpen School', 'Local Foundation', 'Grades 4–5'],
+                ['Al-Hidaayah', 'Islamic Studies', 'Grade 3'],
+                ['CIDER', 'Inclusive Ed.', 'Kindergarten – Grade 2'],
+                ['Bangladesh Elementary', 'National Curriculum', 'Playgroup'],
               ].map(([name, kind, stage], idx) => (
                 <motion.div
                   key={name}

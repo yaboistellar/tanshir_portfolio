@@ -3505,10 +3505,17 @@ html.lenis, html.lenis body {
 .dark .finished-card,
 .dark .to-read,
 .dark .lending-policy,
-.dark .note-card {
+.dark .note-card,
+.dark .milestone {
   background: var(--note-surface) !important;
   color: #ffffff !important;
   border-color: var(--note-ink) !important;
+}
+
+.dark .milestone {
+  background: #1a2836 !important;
+  border-color: #3b82f6 !important;
+  --sticky-paper: #1a2836;
 }
 
 .dark .project-card:nth-child(2n),
@@ -3572,17 +3579,30 @@ html.lenis, html.lenis body {
 .dark .previous-card h4,
 .dark .previous-card p,
 .dark .previous-title,
-.dark .milestone h3,
-.dark .milestone p,
-.dark .milestone-kicker,
-.dark .milestone-target,
-.dark .milestone-note,
 .dark .specialization-card h3,
 .dark .specialization-card p,
 .dark .reading-stats,
 .dark .lending-policy,
 .dark .note-card p {
   color: #ffffff !important;
+}
+
+.dark .milestone h3 {
+  color: #ffffff !important;
+}
+
+.dark .milestone-copy {
+  color: #e2e8f0 !important;
+}
+
+.dark .milestone-kicker,
+.dark .milestone-target {
+  color: #60a5fa !important;
+}
+
+.dark .milestone-note {
+  color: #60a5fa !important;
+  border-top-color: rgb(96 165 250 / 40%) !important;
 }
 
 .dark .previous-card p {
