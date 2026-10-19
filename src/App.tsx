@@ -4128,10 +4128,9 @@ function IllustrationsPage() {
 
   const categories = [
     { key: 'all', label: 'All Works' },
-    { key: 'isometric', label: 'Vector & Isometric' },
-    { key: 'character', label: 'Notebook & Ink' },
-    { key: 'generative', label: 'Generative & Math' },
-    { key: 'iconography', label: 'Iconography & UI' },
+    { key: 'paintings', label: 'Paintings & Canvas' },
+    { key: 'space', label: 'Space & Celestial' },
+    { key: 'studies', label: 'Detail Studies' },
   ];
 
   const filtered: IllustrationItem[] = activeFilter === 'all'
@@ -4159,16 +4158,25 @@ function IllustrationsPage() {
     },
   };
 
-  function handleDownloadSVG(item: IllustrationItem) {
-    const blob = new Blob([item.svgString], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${item.id}.svg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function handleDownloadArtwork(item: IllustrationItem) {
+    if (item.imageUrl) {
+      const a = document.createElement('a');
+      a.href = item.imageUrl;
+      a.download = `${item.id}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else if (item.svgString) {
+      const blob = new Blob([item.svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.id}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   }
 
   return (
@@ -4185,10 +4193,10 @@ function IllustrationsPage() {
           <ThreeBackgroundScene />
           <div style={{ position: 'relative', zIndex: 1 }}>
             <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
-              • Page 05 • Vector Craft &amp; Illustration
+              • Page 05 • Digital Art &amp; Illustration
             </motion.p>
             <h1 className="intro-title handwritten" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-              {['Illustrations', '&', 'Vector', 'Gallery'].map((word, i) => (
+              {['Illustrations', '&', 'Artwork', 'Gallery'].map((word, i) => (
                 <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
                   <motion.span
                     style={{ display: 'inline-block' }}
@@ -4209,18 +4217,18 @@ function IllustrationsPage() {
               </motion.span>
             </h1>
             <motion.p className="intro-copy" variants={heroItemVariants}>
-              hand-drawn vectors, isometric blueprints, generative math art, and character sketches — every piece is a first-principles construction.
+              original digital paintings, lunar landscapes, space horizons, and ink notebook studies — featuring the &apos;Unity&apos; flag on the moon.
             </motion.p>
           </div>
           <div className="intro-tags typewriter" style={{ position: 'relative', zIndex: 1 }}>
             <motion.span className="tag tag-yellow ink-border" whileHover={{ scale: 1.05 }}>
-              {ILLUSTRATIONS.length} Original Works
+              {ILLUSTRATIONS.length} Original Views
             </motion.span>
             <motion.span className="tag tag-peach ink-border" whileHover={{ scale: 1.05 }}>
-              100% Hand-Crafted SVG
+              Original Hand-Drawn Art
             </motion.span>
             <motion.span className="tag tag-green ink-border" whileHover={{ scale: 1.05 }}>
-              Vector &amp; Parametric
+              Unity on the Moon
             </motion.span>
           </div>
         </motion.header>
@@ -4259,7 +4267,17 @@ function IllustrationsPage() {
                   onClick={() => setSelectedId(item.id)}
                 >
                   <div className="illust-card-preview" style={{ aspectRatio: item.aspectRatio }}>
-                    {item.svgContent}
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="illust-preview-img"
+                        style={{ objectPosition: item.imagePosition || 'center center' }}
+                        loading="lazy"
+                      />
+                    ) : (
+                      item.svgContent
+                    )}
                   </div>
                   <div className="illust-card-info">
                     <span className="illust-card-category typewriter">{item.categoryLabel}</span>
@@ -4303,7 +4321,15 @@ function IllustrationsPage() {
                   ✕
                 </button>
                 <div className="illust-lightbox-preview" style={{ aspectRatio: selected.aspectRatio }}>
-                  {selected.svgContent}
+                  {selected.imageUrl ? (
+                    <img
+                      src={selected.imageUrl}
+                      alt={selected.title}
+                      className="illust-lightbox-img"
+                    />
+                  ) : (
+                    selected.svgContent
+                  )}
                 </div>
                 <div className="illust-lightbox-details">
                   <span className="illust-card-category typewriter">{selected.categoryLabel}</span>
@@ -4329,8 +4355,8 @@ function IllustrationsPage() {
                       <span key={tag} className="illust-tag typewriter">{tag}</span>
                     ))}
                   </div>
-                  <button className="illust-download-btn typewriter" onClick={() => handleDownloadSVG(selected)}>
-                    <ArrowDown aria-hidden="true" /> Download SVG
+                  <button className="illust-download-btn typewriter" onClick={() => handleDownloadArtwork(selected)}>
+                    <ArrowDown aria-hidden="true" /> Download Artwork
                   </button>
                 </div>
               </motion.div>

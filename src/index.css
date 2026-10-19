@@ -4781,8 +4781,19 @@ html.lenis, html.lenis body {
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.illust-card:hover .illust-card-preview svg {
-  transform: scale(1.025);
+.illust-card-preview img,
+.illust-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.illust-card:hover .illust-card-preview svg,
+.illust-card:hover .illust-card-preview img,
+.illust-card:hover .illust-preview-img {
+  transform: scale(1.035);
 }
 
 .illust-card-info {
@@ -4906,6 +4917,16 @@ html.lenis, html.lenis body {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.illust-lightbox-preview img,
+.illust-lightbox-img {
+  width: 100%;
+  height: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  display: block;
+  background: #060a18;
 }
 
 .illust-lightbox-details {
