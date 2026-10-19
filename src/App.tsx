@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import Lenis from 'lenis';
 import * as THREE from 'three';
+import { ILLUSTRATIONS, type IllustrationItem } from './illustrations-data';
 import {
   ArrowDown,
   ArrowRight,
@@ -56,13 +57,14 @@ import {
   ZoomOut,
 } from 'lucide-react';
 
-type PageKey = 'home' | 'games' | 'bookshelf' | 'education';
+type PageKey = 'home' | 'games' | 'bookshelf' | 'education' | 'illustrations';
 
 const navigation = [
   { label: 'Home', href: '/', page: 'home' as PageKey },
   { label: 'Projects', href: '/#projects', page: 'home' as PageKey },
   { label: 'Notebook Games', href: '/games', page: 'games' as PageKey },
   { label: 'Bookshelf', href: '/bookshelf', page: 'bookshelf' as PageKey },
+  { label: 'Illustrations', href: '/illustrations', page: 'illustrations' as PageKey },
   { label: 'Education', href: '/education', page: 'education' as PageKey },
   { label: 'Contact', href: '/#contact', page: 'home' as PageKey },
 ];
@@ -71,6 +73,7 @@ function currentPage(): PageKey {
   const path = window.location.pathname;
   if (path.startsWith('/games')) return 'games';
   if (path.startsWith('/bookshelf')) return 'bookshelf';
+  if (path.startsWith('/illustrations')) return 'illustrations';
   if (path.startsWith('/education')) return 'education';
   return 'home';
 }
@@ -4119,10 +4122,231 @@ function EducationPage() {
   );
 }
 
+function IllustrationsPage() {
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const categories = [
+    { key: 'all', label: 'All Works' },
+    { key: 'isometric', label: 'Vector & Isometric' },
+    { key: 'character', label: 'Notebook & Ink' },
+    { key: 'generative', label: 'Generative & Math' },
+    { key: 'iconography', label: 'Iconography & UI' },
+  ];
+
+  const filtered: IllustrationItem[] = activeFilter === 'all'
+    ? ILLUSTRATIONS
+    : ILLUSTRATIONS.filter((ill: IllustrationItem) => ill.category === activeFilter);
+
+  const selected: IllustrationItem | undefined = selectedId
+    ? ILLUSTRATIONS.find((ill: IllustrationItem) => ill.id === selectedId)
+    : undefined;
+
+  const heroContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+    },
+  };
+
+  const heroItemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' as const },
+    },
+  };
+
+  function handleDownloadSVG(item: IllustrationItem) {
+    const blob = new Blob([item.svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${item.id}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <SiteFrame page="illustrations">
+      <div className="page-content illustrations-content">
+        {/* Hero Header */}
+        <motion.header
+          className="intro home-hero"
+          variants={heroContainerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ minHeight: 'auto', paddingTop: 0 }}
+        >
+          <ThreeBackgroundScene />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <motion.p className="eyebrow typewriter" variants={heroItemVariants}>
+              • Page 05 • Vector Craft &amp; Illustration
+            </motion.p>
+            <h1 className="intro-title handwritten" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              {['Illustrations', '&', 'Vector', 'Gallery'].map((word, i) => (
+                <span key={word} style={{ overflow: 'hidden', display: 'inline-block' }}>
+                  <motion.span
+                    style={{ display: 'inline-block' }}
+                    initial={{ y: '120%', opacity: 0, rotate: i % 2 === 0 ? 3 : -3 }}
+                    animate={{ y: '0%', opacity: 1, rotate: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 + i * 0.08, ease: 'easeOut' as const }}
+                  >
+                    {word}
+                  </motion.span>
+                </span>
+              ))}
+              <motion.span
+                animate={{ rotate: [0, 12, -12, 0] }}
+                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1.2 }}
+                style={{ display: 'inline-flex' }}
+              >
+                <PenTool aria-hidden="true" />
+              </motion.span>
+            </h1>
+            <motion.p className="intro-copy" variants={heroItemVariants}>
+              hand-drawn vectors, isometric blueprints, generative math art, and character sketches — every piece is a first-principles construction.
+            </motion.p>
+          </div>
+          <div className="intro-tags typewriter" style={{ position: 'relative', zIndex: 1 }}>
+            <motion.span className="tag tag-yellow ink-border" whileHover={{ scale: 1.05 }}>
+              {ILLUSTRATIONS.length} Original Works
+            </motion.span>
+            <motion.span className="tag tag-peach ink-border" whileHover={{ scale: 1.05 }}>
+              100% Hand-Crafted SVG
+            </motion.span>
+            <motion.span className="tag tag-green ink-border" whileHover={{ scale: 1.05 }}>
+              Vector &amp; Parametric
+            </motion.span>
+          </div>
+        </motion.header>
+
+        {/* Category Filter Tabs */}
+        <section className="illust-filter-bar">
+          <div className="illust-filters typewriter">
+            {categories.map((cat) => (
+              <button
+                key={cat.key}
+                className={`illust-filter-btn${activeFilter === cat.key ? ' illust-filter-active' : ''}`}
+                onClick={() => setActiveFilter(cat.key)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Gallery Grid */}
+        <section className="illust-gallery">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((item: IllustrationItem, idx: number) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.35, delay: idx * 0.06 }}
+              >
+                <Interactive3DBox
+                  className="illust-card ink-border shadow-note"
+                  maxTilt={6}
+                  depth={14}
+                  onClick={() => setSelectedId(item.id)}
+                >
+                  <div className="illust-card-preview" style={{ aspectRatio: item.aspectRatio }}>
+                    {item.svgContent}
+                  </div>
+                  <div className="illust-card-info">
+                    <span className="illust-card-category typewriter">{item.categoryLabel}</span>
+                    <h3 className="illust-card-title handwritten">{item.title}</h3>
+                    <div className="illust-card-palette">
+                      {item.palette.map((c) => (
+                        <span
+                          key={c.hex}
+                          className="illust-swatch"
+                          style={{ background: c.hex }}
+                          title={c.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </Interactive3DBox>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </section>
+
+        {/* Lightbox / Detail Modal */}
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              className="illust-lightbox-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedId(null)}
+            >
+              <motion.div
+                className="illust-lightbox-card ink-border"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button className="illust-lightbox-close" onClick={() => setSelectedId(null)} aria-label="Close">
+                  ✕
+                </button>
+                <div className="illust-lightbox-preview" style={{ aspectRatio: selected.aspectRatio }}>
+                  {selected.svgContent}
+                </div>
+                <div className="illust-lightbox-details">
+                  <span className="illust-card-category typewriter">{selected.categoryLabel}</span>
+                  <h2 className="illust-lightbox-title handwritten">{selected.title}</h2>
+                  <p className="illust-lightbox-desc">{selected.description}</p>
+                  <div className="illust-lightbox-meta typewriter">
+                    <span><strong>Date:</strong> {selected.date}</span>
+                    <span><strong>Tools:</strong> {selected.tools}</span>
+                    <span><strong>Medium:</strong> {selected.medium}</span>
+                    <span><strong>Dimensions:</strong> {selected.dimensions}</span>
+                  </div>
+                  <div className="illust-lightbox-palette">
+                    {selected.palette.map((c) => (
+                      <div key={c.hex} className="illust-palette-chip">
+                        <span className="illust-swatch-lg" style={{ background: c.hex }} />
+                        <span className="illust-palette-label typewriter">{c.name}</span>
+                        <span className="illust-palette-hex typewriter">{c.hex}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="illust-lightbox-tags">
+                    {selected.tags.map((tag) => (
+                      <span key={tag} className="illust-tag typewriter">{tag}</span>
+                    ))}
+                  </div>
+                  <button className="illust-download-btn typewriter" onClick={() => handleDownloadSVG(selected)}>
+                    <ArrowDown aria-hidden="true" /> Download SVG
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </SiteFrame>
+  );
+}
+
 function App() {
   const page = currentPage();
   if (page === 'games') return <GamesPage />;
   if (page === 'bookshelf') return <BookshelfPage />;
+  if (page === 'illustrations') return <IllustrationsPage />;
   if (page === 'education') return <EducationPage />;
   return <HomePage />;
 }

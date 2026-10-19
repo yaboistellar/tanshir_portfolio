@@ -4675,3 +4675,377 @@ html.lenis, html.lenis body {
   background: var(--note-cream) !important;
   border-radius: 0 !important;
 }
+
+/* ==========================================================================
+   Page 05 • Vector Craft & Illustrations Gallery
+   ========================================================================== */
+
+.illustrations-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.illust-filter-bar {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.illust-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.illust-filter-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.illust-filter-btn:hover {
+  background: var(--note-surface-soft);
+  transform: translateY(-2px);
+  box-shadow: 2px 3px 0 var(--note-shadow);
+}
+
+.illust-filter-btn.illust-filter-active {
+  background: var(--note-ink);
+  color: var(--note-cream);
+  transform: translateY(-2px);
+  box-shadow: 3px 4px 0 var(--note-shadow);
+}
+
+.illust-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .illust-gallery {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.illust-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--note-surface);
+  border: 2px solid var(--note-ink);
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+}
+
+.illust-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 5px 7px 0 var(--note-shadow);
+}
+
+.illust-card-preview {
+  width: 100%;
+  background: #0b0f17;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 2px solid var(--note-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illust-card-preview svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.illust-card:hover .illust-card-preview svg {
+  transform: scale(1.025);
+}
+
+.illust-card-info {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  gap: 6px;
+  flex: 1;
+}
+
+.illust-card-category {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--note-muted);
+}
+
+.illust-card-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--note-ink);
+}
+
+.illust-card-palette {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.illust-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--note-ink);
+  box-shadow: 1px 1px 0 var(--note-shadow);
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.illust-swatch:hover {
+  transform: scale(1.35);
+}
+
+/* Lightbox Modal */
+.illust-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 29, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.illust-lightbox-card {
+  position: relative;
+  background: var(--note-cream);
+  color: var(--note-ink);
+  border: 3px solid var(--note-ink);
+  border-radius: 4px;
+  box-shadow: 8px 12px 0 var(--note-ink);
+  max-width: 960px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+  .illust-lightbox-card {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+  .illust-lightbox-preview {
+    border-bottom: none !important;
+    border-right: 2px solid var(--note-ink);
+  }
+}
+
+.illust-lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--note-ink);
+  background: var(--note-surface);
+  color: var(--note-ink);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.illust-lightbox-close:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #991b1b;
+  transform: rotate(90deg);
+}
+
+.illust-lightbox-preview {
+  background: #0b0f17;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 2px solid var(--note-ink);
+}
+
+.illust-lightbox-preview svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.illust-lightbox-details {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.illust-lightbox-title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--note-ink);
+}
+
+.illust-lightbox-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--note-ink);
+  margin: 0;
+}
+
+.illust-lightbox-meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px 0;
+  border-top: 1.5px dashed var(--note-rule);
+  border-bottom: 1.5px dashed var(--note-rule);
+  font-size: 11px;
+}
+
+.illust-lightbox-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.illust-palette-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--note-surface);
+  border: 1px solid var(--note-ink);
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.illust-swatch-lg {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--note-ink);
+  display: inline-block;
+}
+
+.illust-palette-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--note-ink);
+}
+
+.illust-palette-hex {
+  font-size: 9px;
+  color: var(--note-muted);
+}
+
+.illust-lightbox-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.illust-tag {
+  font-size: 10px;
+  background: var(--note-yellow);
+  color: #1f2421;
+  border: 1px solid var(--note-ink);
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.illust-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--note-ink);
+  color: var(--note-cream);
+  border: 2px solid var(--note-ink);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.15s ease;
+}
+
+.illust-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 4px 0 var(--note-shadow);
+}
+
+/* Dark mode adjustments */
+.dark .illust-filter-btn {
+  background: var(--note-surface);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+}
+
+.dark .illust-filter-btn.illust-filter-active {
+  background: var(--note-ink);
+  color: var(--note-cream);
+}
+
+.dark .illust-card {
+  background: var(--note-surface);
+  border-color: var(--note-ink);
+}
+
+.dark .illust-lightbox-card {
+  background: var(--note-surface);
+  color: var(--note-ink);
+  border-color: var(--note-ink);
+  box-shadow: 8px 12px 0 rgba(0, 0, 0, 0.6);
+}
+
+.dark .illust-tag {
+  background: #3b2800;
+  color: #fef08a;
+  border-color: #ca8a04;
+}
+
+.dark .illust-download-btn {
+  background: var(--note-ink);
+  color: var(--note-cream);
+  border-color: var(--note-ink);
+}
