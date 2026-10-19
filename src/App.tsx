@@ -4222,7 +4222,7 @@ function IllustrationsPage() {
           </div>
           <div className="intro-tags typewriter" style={{ position: 'relative', zIndex: 1 }}>
             <motion.span className="tag tag-yellow ink-border" whileHover={{ scale: 1.05 }}>
-              {ILLUSTRATIONS.length} Original Views
+              Featured Masterwork
             </motion.span>
             <motion.span className="tag tag-peach ink-border" whileHover={{ scale: 1.05 }}>
               Original Hand-Drawn Art
@@ -4233,23 +4233,25 @@ function IllustrationsPage() {
           </div>
         </motion.header>
 
-        {/* Category Filter Tabs */}
-        <section className="illust-filter-bar">
-          <div className="illust-filters typewriter">
-            {categories.map((cat) => (
-              <button
-                key={cat.key}
-                className={`illust-filter-btn${activeFilter === cat.key ? ' illust-filter-active' : ''}`}
-                onClick={() => setActiveFilter(cat.key)}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </section>
+        {/* Category Filter Tabs (only when multiple items exist) */}
+        {ILLUSTRATIONS.length > 1 && (
+          <section className="illust-filter-bar">
+            <div className="illust-filters typewriter">
+              {categories.map((cat) => (
+                <button
+                  key={cat.key}
+                  className={`illust-filter-btn${activeFilter === cat.key ? ' illust-filter-active' : ''}`}
+                  onClick={() => setActiveFilter(cat.key)}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Gallery Grid */}
-        <section className="illust-gallery">
+        <section className={`illust-gallery ${filtered.length === 1 ? 'illust-gallery-single' : ''}`}>
           <AnimatePresence mode="popLayout">
             {filtered.map((item: IllustrationItem, idx: number) => (
               <motion.div

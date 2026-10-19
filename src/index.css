@@ -4746,6 +4746,18 @@ html.lenis, html.lenis body {
   }
 }
 
+.illust-gallery-single {
+  display: flex !important;
+  justify-content: center !important;
+  max-width: 620px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.illust-gallery-single .illust-card {
+  width: 100%;
+}
+
 .illust-card {
   display: flex;
   flex-direction: column;
